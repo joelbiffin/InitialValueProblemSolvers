@@ -1,14 +1,16 @@
 import numpy as np
+import math
+
 
 from src.ivp import IVP
 from src.ode import ODE
 from src.solver import ForwardEulerSolver
 
 """"""""""""""""""""""""""""""""""""""""""""""""""""""
-"""
-def f(u, t):
-    return np.array([u[0] * t])
 
+
+def f(u, t):
+    return np.array([u * t])
 
 
 de = ODE(f)
@@ -19,7 +21,6 @@ t_0 = 0
 step = 0.5
 t_n = 5
 
-print(de.get_dimension().size)
 
 
 def true_value(t):
@@ -49,12 +50,9 @@ print(slv.solution)
 
 """
 
-
 def f(u, t):
-    return np.array(
-        [u[1],
-         -6*u[0] + 5*u[1]]
-    )
+    return np.array([0*u[0] + u[1],
+                    -6*u[0] + 5*u[1]])
 
 
 ode_system = ODE(f)
@@ -65,11 +63,14 @@ t_0 = 0
 step = 0.5
 t_n = 5
 
+
 system_problem = IVP(f, u_0, t_0)
 system_solver = ForwardEulerSolver(system_problem, t_n, step)
+
+
+#system_solver.ivp.ode.compute_derivative(u_0, t_0)
 
 system_solver.solve()
 
 
-
-
+"""

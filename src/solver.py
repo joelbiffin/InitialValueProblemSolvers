@@ -30,8 +30,7 @@ class Solver(object):
 
         # produces empty time and value meshes
         self.time_mesh = self.build_time_mesh()
-        # TODO: create variable value mesh size for vector equations
-        self.value_mesh = self.build_value_mesh(2)
+        self.value_mesh = self.build_value_mesh(self.ivp.get_dimension())
 
         # creates empty solution object for print method
         self.solution = Solution(self.time_mesh, self.value_mesh)
@@ -84,12 +83,14 @@ class OneStepSolver(Solver):
 
     # type hints for instance variables
     step_size: float
+    precision: int
 
 
-    def __init__(self, ivp, end_time, step_size):
+    def __init__(self, ivp, end_time, step_size, precision):
         """ Initialising variables same as Solver, just with constant step size.
         """
         self.step_size = step_size
+        self.precision = precision
         super().__init__(ivp, end_time)
 
 
@@ -131,9 +132,7 @@ class OneStepSolver(Solver):
 
         # calculate this iteration's current time and update corresponding
         # value in time_mesh
-        # TODO: replace hard-coded rounding with variable precision in constructor
-        self.current_time = round(self.time_mesh[step_counter - 1] + this_step_length, 3)
-        print(self.current_time, "\n")
+        self.current_time = round(self.time_mesh[step_counter - 1] + this_step_length, self.precision)
         self.time_mesh[step_counter] = self.current_time
 
         # calculate this iteration's approximation value
@@ -153,12 +152,8 @@ class ForwardEulerSolver(OneStepSolver):
         # u_{i+1} = u_i + h * f(u_i, t_i)
         u_i = self.value_mesh[this_step - 1]
         t_i = self.time_mesh[this_step - 1]
-
         f_i = self.ivp.ode.compute_derivative(u_i, t_i)
 
-        # print("(APPROX) u(", t_i , ") ~ ", u_i + step_size * f_i)
-
-        # TODO: ambiguous how these operations happen with numpy arrays
         return u_i + step_size * f_i
 
 

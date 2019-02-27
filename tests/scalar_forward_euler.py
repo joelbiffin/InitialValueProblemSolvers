@@ -20,13 +20,14 @@ de = ODE(f)
 u_0 = np.array([1])
 t_0 = 0
 
-step = 0.001
+step = 0.1
+precision = 1
 t_n = 5
 
 
 problem = IVP(de, u_0, t_0)
 
-slv = ForwardEulerSolver(problem, t_n, step)
+slv = ForwardEulerSolver(problem, t_n, step, precision)
 
 slv.solve()
 
