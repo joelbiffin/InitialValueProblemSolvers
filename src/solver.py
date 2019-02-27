@@ -42,7 +42,7 @@ class Solver(object):
 
 
     def build_value_mesh(self, dimension):
-        return np.zeros([self.max_mesh_size(), dimension])
+        return np.zeros((self.max_mesh_size(), dimension))
 
 
     def print_solution(self):
@@ -95,29 +95,15 @@ class OneStepSolver(Solver):
 
     def solve(self):
         # housekeeping
-        step_counter = int(0)
-        """print("u_0:")
-        print(self.ivp.initial_value.shape)
-        print()
-
-        print("mesh:")
-        print(self.value_mesh)
-        input("HELLLOO")
-        """
+        step_counter = 0
 
         # initial value
         self.value_mesh[step_counter] = self.ivp.initial_value
         self.time_mesh[step_counter] = self.ivp.initial_time
 
-        """
-        input("HELLLOO")
-        quit()
-        """
-
         # loop through iterations approximating solution, storing values and
         # times used in this instance's meshes
-        while self.current_time <= self.end_time:
-            print("HH")
+        while self.current_time < self.end_time:
             # housekeeping variable
             step_counter += 1
             # performs operations on instance variables
@@ -137,7 +123,7 @@ class OneStepSolver(Solver):
         # note that we use the literal 0 WLOG since we have a fixed step-size
         # in one step methods
         return math.ceil(
-            (self.end_time - self.ivp.initial_time + 1) / self.next_step_size(0))
+            (self.end_time - self.ivp.initial_time) / self.next_step_size(0)) + 1
 
 
     def forward_step(self, step_counter):
@@ -145,7 +131,9 @@ class OneStepSolver(Solver):
 
         # calculate this iteration's current time and update corresponding
         # value in time_mesh
-        self.current_time = self.time_mesh[step_counter - 1] + this_step_length
+        # TODO: replace hard-coded rounding with variable precision in constructor
+        self.current_time = round(self.time_mesh[step_counter - 1] + this_step_length, 3)
+        print(self.current_time, "\n")
         self.time_mesh[step_counter] = self.current_time
 
         # calculate this iteration's approximation value
@@ -165,36 +153,13 @@ class ForwardEulerSolver(OneStepSolver):
         # u_{i+1} = u_i + h * f(u_i, t_i)
         u_i = self.value_mesh[this_step - 1]
         t_i = self.time_mesh[this_step - 1]
-        print("u_i", u_i)
-        print("t_i", t_i)
 
         f_i = self.ivp.ode.compute_derivative(u_i, t_i)
 
         # print("(APPROX) u(", t_i , ") ~ ", u_i + step_size * f_i)
 
-        # TODO: ambigious how these operations happen with numpy arrays
+        # TODO: ambiguous how these operations happen with numpy arrays
         return u_i + step_size * f_i
-
-
-
-class BackwardEulerSolver(OneStepSolver):
-    pass
-
-
-
-class MultiStepSolver(Solver):
-    pass
-
-
-
-class MultiStepFixedWidthSolver(MultiStepSolver):
-    pass
-
-
-
-class MultiStepAdaptiveWidthSolver(MultiStepSolver):
-    pass
-
 
 
 

@@ -10,25 +10,20 @@ class IVP(object):
             u(t_0) = u_0
     """
 
+    ode: ODE
+    initial_value: np.ndarray
+    initial_time: float
+    dimension: int
+
+
     def __init__(self, ode, initial_value, initial_time):
         """ Setting instance variables """
         self.ode = ode
         self.initial_value = initial_value
         self.initial_time = initial_time
+        self.dimension = self.initial_value.size
 
 
+    def get_dimension(self):
+        return self.dimension
 
-
-
-def f(u, t):
-    return u
-
-
-de = ODE(f)
-
-u_0 = np.array([1])
-t_0 = 0
-
-problem = IVP(de, u_0, t_0)
-
-print(problem.ode.compute_derivative(2, 0))

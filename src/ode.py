@@ -6,7 +6,8 @@ class ODE(object):
         problem when in the form, u'(t) = f(u, t)
     """
 
-    function: np.array
+    function: np.ndarray
+
 
     def __init__(self, function):
         self.function = function
@@ -16,6 +17,4 @@ class ODE(object):
         return self.function(value, time)
 
 
-    def get_dimension(self):
-        return self.function(0, 0)
 
