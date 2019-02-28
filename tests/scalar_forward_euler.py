@@ -54,6 +54,6 @@ def print_true_solution(h, start, end):
 
 comparison = ResultsComparator(slv.solution, true_value)
 
-comparison.pointwise_plot()
+comparison.pointwise_plot(0)
 
 
