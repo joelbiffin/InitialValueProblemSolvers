@@ -1,5 +1,6 @@
 import numpy as np
 import math
+import scipy.optimize as opt
 
 from abc import abstractmethod, ABCMeta
 from src.ivp import IVP
@@ -152,9 +153,27 @@ class ForwardEulerSolver(OneStepSolver):
         # u_{i+1} = u_i + h * f(u_i, t_i)
         u_i = self.value_mesh[this_step - 1]
         t_i = self.time_mesh[this_step - 1]
-        f_i = self.ivp.ode.compute_derivative(u_i, t_i)
+        f_i = self.ivp.ode.function(u_i, t_i)
 
         return u_i + step_size * f_i
+
+
+
+class BackwardEulerSolver(OneStepSolver):
+    def calculate_next_values(self, this_step, step_size):
+        # u_{i+1} = u_i + h * f(u_{i+1}, t_{i+1})
+        u_i = self.value_mesh[this_step - 1]
+        t_i = self.time_mesh[this_step - 1]
+        f_i = self.ivp.ode.function(u_i, t_i)
+
+        # to find initial guess for Newton's method, we carry out forward euler
+        u_guess = u_i + step_size * f_i
+
+        # function that needs to be "solved"
+        g_next = lambda u_next, derivative, t_next: u_next - u_i - step_size*derivative(u_next, t_next)
+
+        return opt.newton(g_next, u_guess, args=(self.ivp.ode.function, self.time_mesh[this_step]))
+
 
 
 

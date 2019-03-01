@@ -4,7 +4,7 @@ import numpy as np
 from src.ivp import IVP
 from src.ode import ODE
 from src.results import ResultsComparator
-from src.solver import ForwardEulerSolver
+from src.solver import BackwardEulerSolver
 
 
 g = lambda u, t: np.array([u[0] * t])
@@ -21,10 +21,9 @@ t_n = 5
 
 problem = IVP(de, u_0, t_0)
 
-slv = ForwardEulerSolver(problem, t_n, step, precision)
+slv = BackwardEulerSolver(problem, t_n, step, precision)
 
 slv.solve()
-
 print(slv.solution)
 
 
@@ -42,8 +41,6 @@ def print_true_solution(h, start, end):
 
     print()
 
-
-#print_true_solution(step, t_0, t_n)
 
 
 comparison = ResultsComparator(slv.solution, true_value)
