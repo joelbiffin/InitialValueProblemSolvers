@@ -14,8 +14,8 @@ de = ODE(g)
 u_0 = np.array([1])
 t_0 = 0
 
-step = 0.001
-precision = 3
+step = 0.01
+precision = 2
 t_n = 5
 
 
