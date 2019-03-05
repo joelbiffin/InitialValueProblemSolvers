@@ -34,7 +34,7 @@ class Solver(object):
         self.value_mesh = self.build_value_mesh(self.ivp.get_dimension())
 
         # creates empty solution object for print method
-        self.solution = Solution(self.time_mesh, self.value_mesh)
+        self.solution = Solution(self.time_mesh, self.value_mesh, str(self))
 
 
     def build_time_mesh(self):
@@ -76,6 +76,10 @@ class Solver(object):
         pass
 
 
+    def __str__(self):
+        return "ODE Solver Result"
+
+
 
 class OneStepSolver(Solver):
     """ Class representing a numerical one-step solver (method or group of
@@ -94,14 +98,14 @@ class OneStepSolver(Solver):
         self.precision = precision
         super().__init__(ivp, end_time)
 
+        # initial value
+        self.value_mesh[0] = self.ivp.initial_value
+        self.time_mesh[0] = self.ivp.initial_time
+
 
     def solve(self):
         # housekeeping
         step_counter = 0
-
-        # initial value
-        self.value_mesh[step_counter] = self.ivp.initial_value
-        self.time_mesh[step_counter] = self.ivp.initial_time
 
         # loop through iterations approximating solution, storing values and
         # times used in this instance's meshes
@@ -111,7 +115,7 @@ class OneStepSolver(Solver):
             # performs operations on instance variables
             self.forward_step(step_counter)
 
-        self.solution = Solution(self.time_mesh, self.value_mesh)
+        self.solution = Solution(self.time_mesh, self.value_mesh, str(self))
 
 
     def next_step_size(self, this_step):
@@ -147,6 +151,11 @@ class OneStepSolver(Solver):
         pass
 
 
+    def __str__(self):
+        return "One-Step ODE Solver"
+
+
+
 
 # TODO: refactor inheritance to optimise code re-use
 # TODO: design decision regarding variable step-length methods
@@ -171,22 +180,15 @@ class MultiStepSolver(Solver):
         # builds mesh to contain derivatives evaluated at each step
         self.derivative_mesh = self.build_derivative_mesh(self.ivp.get_dimension())
 
+        # initial values
+        self.value_mesh[0] = self.ivp.initial_value
+        self.time_mesh[0] = self.ivp.initial_time
+        self.derivative_mesh[0] = self.ivp.ode.function(self.value_mesh[0], self.time_mesh[0])
+
 
     def solve(self):
         # housekeeping
         step_counter = 0
-
-        # initial value
-        self.value_mesh[step_counter] = self.ivp.initial_value
-        self.time_mesh[step_counter] = self.ivp.initial_time
-        self.derivative_mesh[step_counter] = self.ivp.ode.function(
-            self.value_mesh[step_counter],
-            self.time_mesh[step_counter]
-        )
-
-        print(self.derivative_mesh)
-        print()
-        print()
 
         # loop through iterations approximating solution, storing values and
         # times used in this instance's meshes
@@ -194,13 +196,10 @@ class MultiStepSolver(Solver):
             # housekeeping variable
             step_counter += 1
 
-            # if step_counter > 2:
-            #     break
-
             # performs operations on instance variables
             self.forward_step(step_counter)
 
-        self.solution = Solution(self.time_mesh, self.value_mesh)
+        self.solution = Solution(self.time_mesh, self.value_mesh, str(self))
 
 
     def next_step_size(self, this_step):
@@ -247,6 +246,10 @@ class MultiStepSolver(Solver):
         pass
 
 
+    def __str__(self):
+        return "Multi-Step ODE Solver"
+
+
 
 class ForwardEulerSolver(OneStepSolver):
     def calculate_next_values(self, this_step, step_size):
@@ -256,6 +259,10 @@ class ForwardEulerSolver(OneStepSolver):
         f_i = self.ivp.ode.function(u_i, t_i)
 
         return u_i + step_size * f_i
+
+
+    def __str__(self):
+        return "Forward Euler"
 
 
 
@@ -275,6 +282,9 @@ class BackwardEulerSolver(OneStepSolver):
         return opt.newton(g_next, u_guess, args=(self.ivp.ode.function, self.time_mesh[this_step]))
 
 
+    def __str__(self):
+        return "Backward Euler"
+
 
 class RungeKuttaFourthSolver(OneStepSolver):
     def calculate_next_values(self, this_step, step_size):
@@ -289,9 +299,13 @@ class RungeKuttaFourthSolver(OneStepSolver):
         return u_i + (1 / 6.0) * (k_1 + 2*k_2 + 2*k_3 + k_4)
 
 
+    def __str__(self):
+        return "4th Order Runge-Kutta"
+
+
+
 
 class AdamsBashforthSecondSolver(MultiStepSolver):
-
     def __init__(self, ivp, one_step_solver, end_time, step_size, precision):
         super().__init__(ivp, one_step_solver, end_time, step_size, precision, 2)
 
@@ -311,5 +325,6 @@ class AdamsBashforthSecondSolver(MultiStepSolver):
         return u_i + (step_size / 2.0) * (3*f_i - f_last)
 
 
-
+    def __str__(self):
+        return "2nd Order Adams-Bashforth"
 

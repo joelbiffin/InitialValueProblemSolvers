@@ -12,9 +12,19 @@ class ResultsComparator(object):
 
 
     def __init__(self, approximation, true_solution):
-        self.approximation = approximation
+        # function representing the true solution
         self.true_solution = true_solution
 
+        # solution class containing value and time meshes
+        self.approximation = approximation
+
+        # mesh containing the true values at all our mesh points
+        self.true_node_mesh = self.compute_true_values_pointwise(self.approximation.time_mesh)
+
+        # initialising local_truncation_error mesh
+        self.local_truncation_error = np.zeros((
+            self.approximation.time_mesh.size, self.approximation.dimension
+        ))
 
 
     def print_result_graphs(self):
@@ -40,24 +50,27 @@ class ResultsComparator(object):
         u_true = self.compute_true_values_pointwise(pseudo_continuous_t)
 
         # graph headings
-        plt.xlabel("t")
-        plt.ylabel("u_" + str(system_id) + "(t)")
-
-        plt.plot(t, u_approx[:, system_id], color='red')
-        plt.plot(pseudo_continuous_t, u_true[:, system_id], color='green')
+        plt.title(self.approximation.method_title)
+        plt.plot(t, u_approx[:, system_id], color="red", label="Approximation")
+        plt.plot(pseudo_continuous_t, u_true[:, system_id],
+                 color="green", label="True Solution")
+        plt.legend(loc="upper right")
+        plt.grid()
         plt.show()
 
 
-    def compute_true_values_pointwise(self, continuous_t):
+    def compute_true_values_pointwise(self, t):
         """ Evaluates the true solutions values at the approximation's time mesh
             points.
         """
-        true_values = np.zeros([continuous_t.size, self.approximation.dimension])
+        true_values = np.zeros([t.size, self.approximation.dimension])
 
         for i, value in enumerate(true_values):
-            true_values[i] = self.true_solution(continuous_t[i])
+            true_values[i] = self.true_solution(t[i])
 
         return true_values
 
 
-
+    def compute_local_truncation_errors(self):
+        self.local_truncation_error = self.approximation.value_mesh - self.true_node_mesh
+        return self.local_truncation_error

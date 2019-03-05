@@ -7,29 +7,29 @@ from src.results import ResultsComparator
 from src.solver import RungeKuttaFourthSolver
 
 
-g = lambda u, t: np.array([u[1], (1/2.0)*u[0] + (5/2.0)*u[1]])
+f = lambda u, t: np.array([
+    u[0] + u[1] - t,
+    u[0] - u[1]
+])
 
-de = ODE(g)
+true_value = lambda t: np.array([
+    math.exp(t*math.sqrt(2)) + math.exp(-1*t*math.sqrt(2)) + 0.5 + 0.5*t,
+    (math.sqrt(2) - 1)*math.exp(t*math.sqrt(2)) - (1 + math.sqrt(2)) * math.exp(-1*t*math.sqrt(2)) - 0.5 + 0.5*t
+])
 
-u_0 = np.array([6, -1])
-t_0 = 3
+de = ODE(f)
 
-step = 0.00001
-precision = 5
-t_n = 5
+u_0 = np.array([2.5, -2.5])
+t_0 = 0
 
+step = 0.25
+precision = 2
+t_n = 3
 
 problem = IVP(de, u_0, t_0)
 
 runge_slv = RungeKuttaFourthSolver(problem, t_n, step, precision)
 runge_slv.solve()
-
-
-def true_value(t):
-    return 0
-
-
-runge_slv.print_solution()
 
 forward_comparison = ResultsComparator(runge_slv.solution, true_value)
 forward_comparison.print_result_graphs()
