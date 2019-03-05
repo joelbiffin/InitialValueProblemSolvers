@@ -6,16 +6,20 @@ from src.ode import ODE
 from src.results import ResultsComparator
 from src.solver import AdamsBashforthSecondSolver, ForwardEulerSolver
 
-g = lambda u, t: np.array([math.cos(t)])
+g = lambda u, t: np.array([-1*u[0]])
 
-de = ODE(g)
+h = lambda u, t: np.array([-2*u[0] + math.cos(t)])
+true_value = lambda t: math.exp(-2*t) + (1/5.0)*(2*math.cos(t) + math.sin(t))
 
-u_0 = np.array([0])
+
+de = ODE(h)
+
+u_0 = np.array([1.4])
 t_0 = 0
 
-step = math.pi / 4.0
-precision = 10
-t_n = 5 * math.pi
+step = 0.001
+precision = 3
+t_n = 10
 
 
 problem = IVP(de, u_0, t_0)
@@ -28,8 +32,8 @@ adams_slv.solve()
 
 
 
-def true_value(t):
-    return math.sin(t)
+# def true_value(t):
+#    return math.exp(-1*t)
 
 adams_slv.print_solution()
 

@@ -184,11 +184,19 @@ class MultiStepSolver(Solver):
             self.time_mesh[step_counter]
         )
 
+        print(self.derivative_mesh)
+        print()
+        print()
+
         # loop through iterations approximating solution, storing values and
         # times used in this instance's meshes
         while self.current_time < self.end_time:
             # housekeeping variable
             step_counter += 1
+
+            # if step_counter > 2:
+            #     break
+
             # performs operations on instance variables
             self.forward_step(step_counter)
 
@@ -222,7 +230,7 @@ class MultiStepSolver(Solver):
         self.time_mesh[step_counter] = self.current_time
 
         # calculate this iteration's derivative values
-        self.derivative_mesh[step_counter] = self.calculate_next_derivative(step_counter)
+        self.derivative_mesh[step_counter - 1] = self.calculate_next_derivative(step_counter - 1)
 
         # calculate this iteration's approximation value
         self.value_mesh[step_counter] \
@@ -294,12 +302,13 @@ class AdamsBashforthSecondSolver(MultiStepSolver):
                          self.time_mesh[this_step - 1],
                          self.derivative_mesh[this_step - 1])
 
-        # if we don't have 2 derivative values in the mesh, use forward euler
+        # if we don't have 2 derivative values in the mesh, use forward euler / runge-kutta
         if this_step < self.step_order:
             return self.one_step_solver.calculate_next_values(this_step, step_size)
 
         f_last = self.derivative_mesh[this_step - 2]
-        return u_i + step_size * ((3 / 2.0)*f_i - (1 / 2.0)*f_last)
+
+        return u_i + (step_size / 2.0) * (3*f_i - f_last)
 
 
 

@@ -34,35 +34,28 @@ class ResultsComparator(object):
         """
         # local vars for readability
         t = self.approximation.time_mesh
+        pseudo_continuous_t = np.linspace(t[0], t[-1], t.size * 100)
+
         u_approx = self.approximation.value_mesh
-        u_true = self.compute_true_values_pointwise()
+        u_true = self.compute_true_values_pointwise(pseudo_continuous_t)
 
         # graph headings
         plt.xlabel("t")
         plt.ylabel("u_" + str(system_id) + "(t)")
 
-        print()
-        # plotting data on graph
-        print(t)
-        print()
-
-
         plt.plot(t, u_approx[:, system_id], color='red')
-        plt.plot(t, u_true[:, system_id], color='green')
+        plt.plot(pseudo_continuous_t, u_true[:, system_id], color='green')
         plt.show()
 
 
-    def compute_true_values_pointwise(self):
+    def compute_true_values_pointwise(self, continuous_t):
         """ Evaluates the true solutions values at the approximation's time mesh
             points.
         """
-        true_values = np.zeros([self.approximation.time_mesh.size,
-                               self.approximation.dimension])
+        true_values = np.zeros([continuous_t.size, self.approximation.dimension])
 
         for i, value in enumerate(true_values):
-            true_values[i] = self.true_solution(self.approximation.time_mesh[i])
-
-        print(true_values)
+            true_values[i] = self.true_solution(continuous_t[i])
 
         return true_values
 
