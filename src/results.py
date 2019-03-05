@@ -1,6 +1,8 @@
 import numpy as np
 import matplotlib.pyplot as plt
+import sys
 
+# np.set_printoptions(threshold=sys.maxsize)
 from src.solution import Solution
 
 
@@ -13,7 +15,6 @@ class ResultsComparator(object):
         self.approximation = approximation
         self.true_solution = true_solution
 
-        #print(self.approximation.)
 
 
     def print_result_graphs(self):
@@ -40,7 +41,12 @@ class ResultsComparator(object):
         plt.xlabel("t")
         plt.ylabel("u_" + str(system_id) + "(t)")
 
+        print()
         # plotting data on graph
+        print(t)
+        print()
+
+
         plt.plot(t, u_approx[:, system_id], color='red')
         plt.plot(t, u_true[:, system_id], color='green')
         plt.show()
@@ -55,6 +61,8 @@ class ResultsComparator(object):
 
         for i, value in enumerate(true_values):
             true_values[i] = self.true_solution(self.approximation.time_mesh[i])
+
+        print(true_values)
 
         return true_values
 
