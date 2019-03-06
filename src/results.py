@@ -74,3 +74,16 @@ class ResultsComparator(object):
     def compute_local_truncation_errors(self):
         self.local_truncation_error = self.approximation.value_mesh - self.true_node_mesh
         return self.local_truncation_error
+
+
+    def graph_local_truncation_errors(self):
+        for i in range(self.approximation.dimension):
+            plt.title("LTE in "+ str(self.approximation.method_title))
+            plt.ylabel("Local Truncation Error")
+            plt.xlabel("t")
+            plt.plot(self.approximation.time_mesh, self.local_truncation_error[:, i], color="red", label="LTE")
+            plt.legend(loc="upper right")
+            plt.grid()
+            plt.show()
+
+

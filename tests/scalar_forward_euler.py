@@ -48,6 +48,6 @@ comparison = ResultsComparator(slv.solution, true_value)
 comparison.print_result_graphs()
 
 comparison.compute_local_truncation_errors()
-print(comparison.local_truncation_error)
+comparison.graph_local_truncation_errors()
 
 

@@ -33,9 +33,10 @@ adams_slv = AdamsBashforthSecondSolver(problem, first_step_slv, t_n, step, preci
 
 adams_slv.solve()
 
-print(adams_slv.solution)
 
 forward_comparison = ResultsComparator(adams_slv.solution, true_value)
 forward_comparison.print_result_graphs()
 
+forward_comparison.compute_local_truncation_errors()
+forward_comparison.graph_local_truncation_errors()
 

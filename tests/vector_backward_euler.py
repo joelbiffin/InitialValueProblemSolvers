@@ -24,8 +24,8 @@ de = ODE(f)
 u_0 = np.array([2.5, -2.5])
 t_0 = 0
 
-step = 0.0005
-precision = 4
+step = 0.25
+precision = 2
 t_n = 3
 
 
@@ -36,5 +36,9 @@ slv.solve()
 
 comparison = ResultsComparator(slv.solution, true_value)
 comparison.print_result_graphs()
+
+
+comparison.compute_local_truncation_errors()
+comparison.graph_local_truncation_errors()
 
 

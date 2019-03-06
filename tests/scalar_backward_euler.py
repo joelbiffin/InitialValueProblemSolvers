@@ -34,7 +34,8 @@ print(slv.solution)
 
 
 comparison = ResultsComparator(slv.solution, true_value)
+comparison.print_result_graphs()
 
-comparison.pointwise_plot(0)
 
-
+comparison.compute_local_truncation_errors()
+comparison.graph_local_truncation_errors()
