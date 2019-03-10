@@ -4,8 +4,8 @@ import numpy as np
 from src.ivp import IVP
 from src.ode import ODE
 from src.results import ResultsComparator
-from src.one_step_solvers import RungeKuttaFourthSolver
-
+from src.one_step_solvers import ForwardEulerSolver, RungeKuttaFourthSolver
+from src.multi_step_solvers import AdamsMoultonSecondSolver
 
 f = lambda u, t: np.array([
     u[0] + u[1] - t,
@@ -22,19 +22,21 @@ de = ODE(f)
 u_0 = np.array([2.5, -2.5])
 t_0 = 0
 
-step = 0.25
-precision = 2
+step = 0.0001
+precision = 4
 t_n = 3
+
 
 problem = IVP(de, u_0, t_0)
 
-runge_slv = RungeKuttaFourthSolver(problem, t_n, step, precision)
-runge_slv.solve()
+first_step_slv = ForwardEulerSolver(problem, t_n, step, precision)
+adams_slv = AdamsMoultonSecondSolver(problem, first_step_slv, t_n, step, precision)
 
-forward_comparison = ResultsComparator(runge_slv.solution, true_value)
+adams_slv.solve()
+
+
+forward_comparison = ResultsComparator(adams_slv.solution, true_value)
 forward_comparison.print_result_graphs()
-
-
 
 forward_comparison.compute_local_truncation_errors()
 forward_comparison.graph_local_truncation_errors()

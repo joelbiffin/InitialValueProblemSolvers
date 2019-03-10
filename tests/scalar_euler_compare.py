@@ -4,8 +4,7 @@ import numpy as np
 from src.ivp import IVP
 from src.ode import ODE
 from src.results import ResultsComparator
-from src.solver import ForwardEulerSolver
-from src.solver import BackwardEulerSolver
+from src.one_step_solvers import ForwardEulerSolver, BackwardEulerSolver
 
 
 g = lambda u, t: np.array([t**2 - 4*t - 1])

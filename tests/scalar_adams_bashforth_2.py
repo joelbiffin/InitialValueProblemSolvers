@@ -4,7 +4,8 @@ import numpy as np
 from src.ivp import IVP
 from src.ode import ODE
 from src.results import ResultsComparator
-from src.solver import AdamsBashforthSecondSolver, ForwardEulerSolver
+from src.one_step_solvers import ForwardEulerSolver
+from src.multi_step_solvers import AdamsBashforthSecondSolver
 
 g = lambda u, t: np.array([-1*u[0]])
 
@@ -17,8 +18,8 @@ de = ODE(h)
 u_0 = np.array([1.4])
 t_0 = 0
 
-step = 0.001
-precision = 3
+step = 0.25
+precision = 0
 t_n = 10
 
 
