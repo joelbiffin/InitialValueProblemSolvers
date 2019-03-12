@@ -28,10 +28,12 @@ class Solver(object):
     ivp: IVP
     current_time: float
     end_time: float
-    step_order: int
+    step_number: int
+    method_order: int
+    error_constant: float
 
 
-    def __init__(self, ivp, end_time):
+    def __init__(self, ivp, end_time, step_tol=1e-4):
         """ Initialising instance variables """
         # simple setting of input values
         self.ivp = ivp
@@ -42,6 +44,7 @@ class Solver(object):
         self.time_mesh = self.build_time_mesh()
         self.value_mesh = self.build_value_mesh(self.ivp.get_dimension())
 
+        self.step_tol = step_tol
         self.method_type = MethodType.unspecified
 
         # setting initial values

@@ -14,15 +14,15 @@ class OneStepSolver(Solver):
     # type hints for instance variables
     step_size: float
     precision: int
-    step_order: int
+    step_number: int
 
 
-    def __init__(self, ivp, end_time, step_size):
+    def __init__(self, ivp, end_time, step_size, step_tol=1e-4):
         """ Initialising variables same as Solver, just with constant step size.
         """
         self.step_size = step_size
-        self.step_order = 1
-        super().__init__(ivp, end_time)
+        self.step_number = 1
+        super().__init__(ivp, end_time, step_tol=step_tol)
 
 
     def solve(self):
@@ -86,9 +86,11 @@ class OneStepSolver(Solver):
 
 
 class ForwardEulerSolver(OneStepSolver):
-    def __init__(self, ivp, end_time, step_size):
-        super().__init__(ivp, end_time, step_size)
+    def __init__(self, ivp, end_time, step_size, step_tol=1e-4):
+        super().__init__(ivp, end_time, step_size, step_tol=step_tol)
         self.method_type = MethodType.explicit
+        self.method_order = 1
+        self.error_constant = 0.5
 
     def calculate_next_values(self, this_step, step_size,
                               call_from=MethodType.unspecified, u_prediction=None):
@@ -111,9 +113,11 @@ class ForwardEulerSolver(OneStepSolver):
 
 
 class BackwardEulerSolver(OneStepSolver):
-    def __init__(self, ivp, end_time, step_size):
-        super().__init__(ivp, end_time, step_size)
+    def __init__(self, ivp, end_time, step_size, step_tol=1e-4):
+        super().__init__(ivp, end_time, step_size, step_tol=step_tol)
         self.method_type = MethodType.implicit
+        self.method_order = 1
+        self.error_constant = -0.5
 
 
     def calculate_next_values(self, this_step, step_size,
@@ -154,8 +158,8 @@ class BackwardEulerSolver(OneStepSolver):
 
 class RungeKuttaFourthSolver(OneStepSolver):
 
-    def __init__(self, ivp, end_time, step_size,):
-        super().__init__(ivp, end_time, step_size)
+    def __init__(self, ivp, end_time, step_size, step_tol=1e-4):
+        super().__init__(ivp, end_time, step_size, step_tol=step_tol)
         self.method_type = MethodType.explicit
 
 

@@ -43,10 +43,10 @@ class ResultsComparator(object):
                      u_approx(t_i) for all i will be plotted.
         """
         # local vars for readability
-        t = self.approximation.time_mesh
+        t = np.trim_zeros(self.approximation.time_mesh, "b")
         pseudo_continuous_t = np.linspace(t[0], t[-1], t.size * 100)
 
-        u_approx = self.approximation.value_mesh
+        u_approx = self.approximation.value_mesh[:t.size]
         u_true = self.compute_true_values_pointwise(pseudo_continuous_t)
 
         # graph headings
@@ -85,5 +85,7 @@ class ResultsComparator(object):
             plt.legend(loc="upper right")
             plt.grid()
             plt.show()
+
+
 
 

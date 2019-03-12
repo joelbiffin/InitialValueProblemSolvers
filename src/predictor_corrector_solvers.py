@@ -13,17 +13,26 @@ class PredictorCorrectorSolver(Solver):
 
     explicit_solver: Solver
     implicit_solver: Solver
+    adaptive: bool
 
 
-    def __init__(self, explicit_solver, implicit_solver):
+    def __init__(self, explicit_solver, implicit_solver, adaptive=False):
         # initialising solver type
         self.method_type = MethodType.predictor_corrector
 
         self.explicit_solver = explicit_solver
         self.implicit_solver = implicit_solver
 
+        # boolean for whether the method uses adaptive step size or not
+        self.adaptive = adaptive
+        self.step_tolerance = self.explicit_solver.step_tol
+
         # making sure given solvers have correct type
         self.check_explicit_implicit()
+        # getting initial step size
+        self.step_size = self.explicit_solver.next_step_size(0)
+
+        self.milnes_constant = self.compute_milnes_constant()
 
         # checking that ivps are the same
         # TODO: make this method
@@ -32,16 +41,13 @@ class PredictorCorrectorSolver(Solver):
         self.ivp = self.explicit_solver.ivp
         self.current_time = self.explicit_solver.ivp.initial_time
         self.end_time = self.explicit_solver.end_time
-        self.precision = self.explicit_solver.precision
 
-        if self.explicit_solver.step_order > 1:
+        if self.explicit_solver.step_number > 1:
             self.derivative_mesh = self.build_derivative_mesh(self.ivp.dimension)
         else:
             self.derivative_mesh = None
 
         super().__init__(self.ivp, self.explicit_solver.end_time)
-        # getting initial step size
-        self.step_size = self.explicit_solver.next_step_size(0)
 
 
     def solve(self):
@@ -57,9 +63,7 @@ class PredictorCorrectorSolver(Solver):
         while self.current_time < self.end_time:
             # housekeeping variable
             step_counter += 1
-
             if step_counter >= self.time_mesh.size: break
-
             # performs operations on instance variables
             self.forward_step(step_counter)
 
@@ -72,7 +76,7 @@ class PredictorCorrectorSolver(Solver):
 
         # calculate this iteration's current time and update corresponding
         # value in time_mesh
-        self.current_time = (self.time_mesh[step_counter - 1] + this_step_length)
+        self.current_time = self.time_mesh[step_counter - 1] + this_step_length
         self.time_mesh[step_counter] = self.current_time
 
         # for housekeeping
@@ -94,12 +98,20 @@ class PredictorCorrectorSolver(Solver):
                                                                   self.derivative_mesh)
             derivative = self.ivp.ode.function(prediction, self.current_time)
             self.update_current_state(step_counter, prediction, derivative)
-
-
             correction = self.implicit_solver.pc_single_iteration(self.value_mesh,
                                                                   self.time_mesh,
                                                                   step_counter,
                                                                   self.derivative_mesh)
+
+        if self.adaptive:
+            milnes_device = self.milnes_constant \
+                            * (np.linalg.norm(prediction - correction, 1))
+            diff = np.linalg.norm(prediction - correction, 1)
+
+            if diff >= self.step_tol:
+                self.adapt_step_size(this_step_length, milnes_device)
+            else:
+                print("No need to adapt")
 
         self.update_current_state(step_counter, correction, derivative)
 
@@ -111,17 +123,30 @@ class PredictorCorrectorSolver(Solver):
             self.derivative_mesh[step_counter] = derivative
 
 
+    def adapt_step_size(self, this_step_length, milnes_device):
+        self.step_size = this_step_length \
+                         * math.pow((math.fabs(self.step_tolerance / milnes_device)),
+                                                     1 / (self.implicit_solver.step_number + 2))
+
+
+
     def max_mesh_size(self):
         return math.ceil(
-            (self.end_time - self.ivp.initial_time) / self.next_step_size(0)) + 1
+            (self.end_time - self.ivp.initial_time) / self.next_step_size(0)*10) + 1
 
 
     def next_step_size(self, this_step):
-        return self.explicit_solver.next_step_size(0)
+        return self.step_size
 
 
     def build_derivative_mesh(self, dimension):
         return np.zeros((self.max_mesh_size(), dimension))
+
+
+    def compute_milnes_constant(self):
+        c_p = self.implicit_solver.error_constant
+        c_c = self.explicit_solver.error_constant
+        return math.fabs(c_c / (c_p - c_c))
 
 
     def pc_single_iteration(self, o_value_mesh, o_time_mesh, this_step, o_derivative_mesh=None):

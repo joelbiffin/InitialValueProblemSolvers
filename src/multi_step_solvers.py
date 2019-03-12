@@ -16,13 +16,13 @@ class MultiStepSolver(Solver):
     """ Class representing abstract multi-step ode solver. """
 
 
-    def __init__(self, ivp, one_step_solver, end_time, step_size, step_order):
+    def __init__(self, ivp, one_step_solver, end_time, step_size, step_number):
         """ Initialising variables same as Solver, just with constant step size.
         """
         self.step_size = step_size
 
         # contains how many steps are considered for the ith iteration's approximation
-        self.step_order = step_order
+        self.step_number = step_number
 
         # contains an instance of a one-step solver for computation of the first few steps
         self.one_step_solver = one_step_solver
@@ -108,6 +108,8 @@ class AdamsBashforthSecondSolver(MultiStepSolver):
     def __init__(self, ivp, one_step_solver, end_time, step_size):
         super().__init__(ivp, one_step_solver, end_time, step_size, 2)
         self.method_type = MethodType.explicit
+        self.method_order = 2
+        self.error_constant = 5.0 / 12
 
 
     def calculate_next_values(self, this_step, step_size, call_from=MethodType.unspecified, u_prediction=None):
@@ -117,7 +119,7 @@ class AdamsBashforthSecondSolver(MultiStepSolver):
                          self.derivative_mesh[this_step - 1])
 
         # if we don't have 2 derivative values in the mesh, use forward euler
-        if this_step < self.step_order:
+        if this_step < self.step_number:
             return self.one_step_solver.calculate_next_values(this_step, step_size)
 
         f_last = self.derivative_mesh[this_step - 2]
@@ -130,7 +132,7 @@ class AdamsBashforthSecondSolver(MultiStepSolver):
                          o_derivative_mesh[this_step - 1])
 
         # if we don't have 2 derivative values in the mesh, use forward euler
-        if this_step < self.step_order:
+        if this_step < self.step_number:
             return self.one_step_solver.pc_single_iteration(o_value_mesh,
                                                             o_time_mesh,
                                                             this_step,
@@ -148,6 +150,8 @@ class AdamsBashforthThirdSolver(MultiStepSolver):
     def __init__(self, ivp, one_step_solver, end_time, step_size):
         super().__init__(ivp, one_step_solver, end_time, step_size, 3)
         self.method_type = MethodType.explicit
+        self.method_order = 3
+        self.error_constant = 3.0 / 8
 
 
     def calculate_next_values(self, this_step, step_size, call_from=MethodType.unspecified, u_prediction=None):
@@ -156,7 +160,7 @@ class AdamsBashforthThirdSolver(MultiStepSolver):
                          self.derivative_mesh[this_step - 1])
 
         # if we don't have 2 derivative values in the mesh, use forward euler
-        if this_step < self.step_order:
+        if this_step < self.step_number:
             return self.one_step_solver.calculate_next_values(this_step, step_size)
 
         f_last, f_llast = (self.derivative_mesh[this_step - 2],
@@ -171,7 +175,7 @@ class AdamsBashforthThirdSolver(MultiStepSolver):
                          o_derivative_mesh[this_step - 1])
 
         # if we don't have 2 derivative values in the mesh, use forward euler
-        if this_step < self.step_order:
+        if this_step < self.step_number:
             return self.one_step_solver.pc_single_iteration(o_value_mesh,
                                                             o_time_mesh,
                                                             this_step,
@@ -193,6 +197,7 @@ class AdamsMoultonSecondSolver(MultiStepSolver):#
     def __init__(self, ivp, one_step_solver, end_time, step_size):
         super().__init__(ivp, one_step_solver, end_time, step_size, 2)
         self.method_type = MethodType.implicit
+        self.error_constant = -1 / 12.0
 
 
     def calculate_next_values(self, this_step, step_size, call_from=MethodType.unspecified, u_prediction=None):
@@ -202,7 +207,7 @@ class AdamsMoultonSecondSolver(MultiStepSolver):#
                          self.derivative_mesh[this_step - 1])
 
         # if we don't have 2 derivative values in the mesh, use one-step
-        if this_step < self.step_order:
+        if this_step < self.step_number:
             return self.one_step_solver.calculate_next_values(this_step, step_size)
 
         # to find initial guess for Newton's method, we carry out forward euler
@@ -224,7 +229,7 @@ class AdamsMoultonSecondSolver(MultiStepSolver):#
         step_size = o_time_mesh[this_step] - t_i
 
         # if we don't have 2 derivative values in the mesh, use one-step method
-        if this_step < self.step_order:
+        if this_step < self.step_number:
             return self.one_step_solver.calculate_next_values(this_step, step_size)
 
         f_next = o_derivative_mesh[this_step]
@@ -246,7 +251,7 @@ class AdamsMoultonThirdSolver(MultiStepSolver):#
                          self.derivative_mesh[this_step - 1])
 
         # if we don't have 2 derivative values in the mesh, use one-step
-        if this_step < self.step_order:
+        if this_step < self.step_number:
             return self.one_step_solver.calculate_next_values(this_step, step_size)
 
         # to find initial guess for Newton's method, we carry out forward euler
@@ -270,7 +275,7 @@ class AdamsMoultonThirdSolver(MultiStepSolver):#
         step_size = o_time_mesh[this_step] - t_i
 
         # if we don't have 2 derivative values in the mesh, use one-step method
-        if this_step < self.step_order:
+        if this_step < self.step_number:
             return self.one_step_solver.calculate_next_values(this_step, step_size)
 
         f_next, f_last = (o_derivative_mesh[this_step],

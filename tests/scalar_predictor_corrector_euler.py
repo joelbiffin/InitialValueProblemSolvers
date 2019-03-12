@@ -7,32 +7,29 @@ from src.results import ResultsComparator
 from src.one_step_solvers import ForwardEulerSolver, BackwardEulerSolver
 from src.predictor_corrector_solvers import PredictorCorrectorSolver
 
-g = lambda u, t: np.array([math.cos(t)])
+h = lambda u, t: np.array([-2*u[0] + math.cos(t)])
+true_value = lambda t: math.exp(-2*t) + (1/5.0)*(2*math.cos(t) + math.sin(t))
 
-de = ODE(g)
 
-u_0 = np.array([0])
+de = ODE(h)
+
+u_0 = np.array([1.4])
 t_0 = 0
 
-step = math.pi / 32
-t_n = math.pi * 6
+step = 0.5
+t_n = math.pi * 10
 
 
 problem = IVP(de, u_0, t_0)
 
-pred_slv = ForwardEulerSolver(problem, t_n, step)
+pred_slv = ForwardEulerSolver(problem, t_n, step, step_tol=1e-2)
 corr_slv = BackwardEulerSolver(problem, t_n, step)
 
-pred_corr_slv = PredictorCorrectorSolver(pred_slv, corr_slv)
+pred_corr_slv = PredictorCorrectorSolver(pred_slv, corr_slv, adaptive=True)
 pred_corr_slv.solve()
 
 
-
-def true_value(t):
-    return math.sin(t)
-
-
-pred_corr_slv.print_solution()
+print(pred_corr_slv.time_mesh)
 
 
 
