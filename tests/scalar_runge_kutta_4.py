@@ -19,13 +19,12 @@ u_0 = np.array([1.4])
 t_0 = 0
 
 step = 0.5
-precision = 1
 t_n = 10
 
 
 problem = IVP(de, u_0, t_0)
 
-runge_slv = RungeKuttaFourthSolver(problem, t_n, step, precision)
+runge_slv = RungeKuttaFourthSolver(problem, t_n, step)
 runge_slv.solve()
 
 

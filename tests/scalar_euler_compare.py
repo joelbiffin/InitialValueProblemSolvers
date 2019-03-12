@@ -15,16 +15,15 @@ u_0 = np.array([0])
 t_0 = 0
 
 step = 0.0001
-precision = 4
 t_n = 10
 
 
 problem = IVP(de, u_0, t_0)
 
-forward_slv = ForwardEulerSolver(problem, t_n, step, precision)
+forward_slv = ForwardEulerSolver(problem, t_n, step)
 forward_slv.solve()
 
-backward_slv = BackwardEulerSolver(problem, t_n, step, precision)
+backward_slv = BackwardEulerSolver(problem, t_n, step)
 backward_slv.solve()
 
 

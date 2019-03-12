@@ -19,16 +19,15 @@ u_0 = np.array([1.4])
 t_0 = 0
 
 step = 0.25
-precision = 0
 t_n = 10
 
 
 problem = IVP(de, u_0, t_0)
 
-first_step_slv = ForwardEulerSolver(problem, t_n, step, precision)
+first_step_slv = ForwardEulerSolver(problem, t_n, step)
 
 
-adams_slv = AdamsBashforthSecondSolver(problem, first_step_slv, t_n, step, precision)
+adams_slv = AdamsBashforthSecondSolver(problem, first_step_slv, t_n, step)
 adams_slv.solve()
 
 

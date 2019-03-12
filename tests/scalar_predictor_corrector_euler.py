@@ -15,14 +15,13 @@ u_0 = np.array([0])
 t_0 = 0
 
 step = math.pi / 32
-precision = 10
 t_n = math.pi * 6
 
 
 problem = IVP(de, u_0, t_0)
 
-pred_slv = ForwardEulerSolver(problem, t_n, step, precision)
-corr_slv = BackwardEulerSolver(problem, t_n, step, precision)
+pred_slv = ForwardEulerSolver(problem, t_n, step)
+corr_slv = BackwardEulerSolver(problem, t_n, step)
 
 pred_corr_slv = PredictorCorrectorSolver(pred_slv, corr_slv)
 pred_corr_slv.solve()

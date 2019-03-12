@@ -5,7 +5,7 @@ from src.ivp import IVP
 from src.ode import ODE
 from src.results import ResultsComparator
 from src.one_step_solvers import ForwardEulerSolver
-from src.multi_step_solvers import AdamsBashforthSecondSolver, AdamsMoultonSecondSolver
+from src.multi_step_solvers import AdamsBashforthThirdSolver, AdamsMoultonSecondSolver
 
 from src.predictor_corrector_solvers import PredictorCorrectorSolver
 
@@ -17,16 +17,15 @@ de = ODE(h)
 u_0 = np.array([1.4])
 t_0 = 0
 
-step = 0.251
-precision = 3
-t_n = 100
+step = 0.134
+t_n = 10000
 
 
 problem = IVP(de, u_0, t_0)
 
-first_step_slv = ForwardEulerSolver(problem, t_n, step, precision)
-pred_slv = AdamsBashforthSecondSolver(problem, first_step_slv, t_n, step, precision)
-corr_slv = AdamsMoultonSecondSolver(problem, first_step_slv, t_n, step, precision)
+first_step_slv = ForwardEulerSolver(problem, t_n, step)
+pred_slv = AdamsBashforthThirdSolver(problem, first_step_slv, t_n, step)
+corr_slv = AdamsMoultonSecondSolver(problem, first_step_slv, t_n, step)
 
 pred_corr_slv = PredictorCorrectorSolver(pred_slv, corr_slv)
 pred_corr_slv.solve()

@@ -17,11 +17,10 @@ class OneStepSolver(Solver):
     step_order: int
 
 
-    def __init__(self, ivp, end_time, step_size, precision):
+    def __init__(self, ivp, end_time, step_size):
         """ Initialising variables same as Solver, just with constant step size.
         """
         self.step_size = step_size
-        self.precision = precision
         self.step_order = 1
         super().__init__(ivp, end_time)
 
@@ -87,8 +86,8 @@ class OneStepSolver(Solver):
 
 
 class ForwardEulerSolver(OneStepSolver):
-    def __init__(self, ivp, end_time, step_size, precision):
-        super().__init__(ivp, end_time, step_size, precision)
+    def __init__(self, ivp, end_time, step_size):
+        super().__init__(ivp, end_time, step_size)
         self.method_type = MethodType.explicit
 
     def calculate_next_values(self, this_step, step_size,
@@ -112,8 +111,8 @@ class ForwardEulerSolver(OneStepSolver):
 
 
 class BackwardEulerSolver(OneStepSolver):
-    def __init__(self, ivp, end_time, step_size, precision):
-        super().__init__(ivp, end_time, step_size, precision)
+    def __init__(self, ivp, end_time, step_size):
+        super().__init__(ivp, end_time, step_size)
         self.method_type = MethodType.implicit
 
 
@@ -155,8 +154,8 @@ class BackwardEulerSolver(OneStepSolver):
 
 class RungeKuttaFourthSolver(OneStepSolver):
 
-    def __init__(self, ivp, end_time, step_size, precision):
-        super().__init__(ivp, end_time, step_size, precision)
+    def __init__(self, ivp, end_time, step_size,):
+        super().__init__(ivp, end_time, step_size)
         self.method_type = MethodType.explicit
 
 

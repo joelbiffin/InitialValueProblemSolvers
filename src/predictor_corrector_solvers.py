@@ -100,9 +100,6 @@ class PredictorCorrectorSolver(Solver):
                                                                   self.time_mesh,
                                                                   step_counter,
                                                                   self.derivative_mesh)
-            print("prediction:\t", prediction)
-            print("derivative:\t", derivative)
-            print("correction:\t", correction)
 
         self.update_current_state(step_counter, correction, derivative)
 

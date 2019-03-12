@@ -24,13 +24,12 @@ u_0 = np.array([2.5, -2.5])
 t_0 = 0
 
 step = 0.005
-precision = 5
 t_n = 3
 
 
 problem = IVP(de, u_0, t_0)
 
-slv = BackwardEulerSolver(problem, t_n, step, precision)
+slv = BackwardEulerSolver(problem, t_n, step)
 slv.solve()
 
 comparison = ResultsComparator(slv.solution, true_value)

@@ -16,11 +16,10 @@ class MultiStepSolver(Solver):
     """ Class representing abstract multi-step ode solver. """
 
 
-    def __init__(self, ivp, one_step_solver, end_time, step_size, precision, step_order):
+    def __init__(self, ivp, one_step_solver, end_time, step_size, step_order):
         """ Initialising variables same as Solver, just with constant step size.
         """
         self.step_size = step_size
-        self.precision = precision
 
         # contains how many steps are considered for the ith iteration's approximation
         self.step_order = step_order
@@ -106,8 +105,8 @@ class MultiStepSolver(Solver):
 
 class AdamsBashforthSecondSolver(MultiStepSolver):
 
-    def __init__(self, ivp, one_step_solver, end_time, step_size, precision):
-        super().__init__(ivp, one_step_solver, end_time, step_size, precision, 2)
+    def __init__(self, ivp, one_step_solver, end_time, step_size):
+        super().__init__(ivp, one_step_solver, end_time, step_size, 2)
         self.method_type = MethodType.explicit
 
 
@@ -146,8 +145,8 @@ class AdamsBashforthSecondSolver(MultiStepSolver):
 
 class AdamsBashforthThirdSolver(MultiStepSolver):
 
-    def __init__(self, ivp, one_step_solver, end_time, step_size, precision):
-        super().__init__(ivp, one_step_solver, end_time, step_size, precision, 3)
+    def __init__(self, ivp, one_step_solver, end_time, step_size):
+        super().__init__(ivp, one_step_solver, end_time, step_size, 3)
         self.method_type = MethodType.explicit
 
 
@@ -173,7 +172,6 @@ class AdamsBashforthThirdSolver(MultiStepSolver):
 
         # if we don't have 2 derivative values in the mesh, use forward euler
         if this_step < self.step_order:
-            print("EULERING")
             return self.one_step_solver.pc_single_iteration(o_value_mesh,
                                                             o_time_mesh,
                                                             this_step,
@@ -192,8 +190,8 @@ class AdamsBashforthThirdSolver(MultiStepSolver):
 
 class AdamsMoultonSecondSolver(MultiStepSolver):#
 
-    def __init__(self, ivp, one_step_solver, end_time, step_size, precision):
-        super().__init__(ivp, one_step_solver, end_time, step_size, precision, 2)
+    def __init__(self, ivp, one_step_solver, end_time, step_size):
+        super().__init__(ivp, one_step_solver, end_time, step_size, 2)
         self.method_type = MethodType.implicit
 
 
@@ -236,8 +234,8 @@ class AdamsMoultonSecondSolver(MultiStepSolver):#
 
 class AdamsMoultonThirdSolver(MultiStepSolver):#
 
-    def __init__(self, ivp, one_step_solver, end_time, step_size, precision):
-        super().__init__(ivp, one_step_solver, end_time, step_size, precision, 3)
+    def __init__(self, ivp, one_step_solver, end_time, step_size):
+        super().__init__(ivp, one_step_solver, end_time, step_size, 3)
         self.method_type = MethodType.implicit
 
 

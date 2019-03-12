@@ -24,15 +24,14 @@ u_0 = np.array([2.5, -2.5])
 t_0 = 0
 
 step = 0.1
-precision = 3
 t_n = 6
 
 
 problem = IVP(de, u_0, t_0)
 
-first_step_slv = ForwardEulerSolver(problem, t_n, step, precision)
-pred_slv = AdamsBashforthThirdSolver(problem, first_step_slv, t_n, step, precision)
-corr_slv = AdamsMoultonSecondSolver(problem, first_step_slv, t_n, step, precision)
+first_step_slv = ForwardEulerSolver(problem, t_n, step)
+pred_slv = AdamsBashforthThirdSolver(problem, first_step_slv, t_n, step)
+corr_slv = AdamsMoultonSecondSolver(problem, first_step_slv, t_n, step)
 
 pred_corr_slv = PredictorCorrectorSolver(pred_slv, corr_slv)
 pred_corr_slv.solve()

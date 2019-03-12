@@ -23,12 +23,11 @@ u_0 = np.array([2.5, -2.5])
 t_0 = 0
 
 step = 0.25
-precision = 2
 t_n = 3
 
 problem = IVP(de, u_0, t_0)
 
-runge_slv = RungeKuttaFourthSolver(problem, t_n, step, precision)
+runge_slv = RungeKuttaFourthSolver(problem, t_n, step)
 runge_slv.solve()
 
 forward_comparison = ResultsComparator(runge_slv.solution, true_value)
