@@ -5,7 +5,7 @@ from src.ivp import IVP
 from src.ode import ODE
 from src.results import ResultsComparator
 from src.one_step_solvers import ForwardEulerSolver
-from src.multi_step_solvers import AdamsBashforthSecondSolver
+from src.multi_step_solvers import AdamsBashforthTwoSolver
 
 g = lambda u, t: np.array([-1*u[0]])
 
@@ -27,7 +27,7 @@ problem = IVP(de, u_0, t_0)
 first_step_slv = ForwardEulerSolver(problem, t_n, step)
 
 
-adams_slv = AdamsBashforthSecondSolver(problem, first_step_slv, t_n, step)
+adams_slv = AdamsBashforthTwoSolver(problem, first_step_slv, t_n, step)
 adams_slv.solve()
 
 
@@ -37,7 +37,7 @@ adams_slv.solve()
 
 adams_slv.print_solution()
 
-forward_comparison = ResultsComparator(adams_slv.solution, true_value)
+forward_comparison = ResultsComparator(adams_slv.solution, true_solution=true_value)
 forward_comparison.print_result_graphs()
 
 forward_comparison.compute_local_truncation_errors()

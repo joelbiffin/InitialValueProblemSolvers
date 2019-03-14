@@ -13,7 +13,6 @@ class OneStepSolver(Solver):
 
     # type hints for instance variables
     step_size: float
-    precision: int
     step_number: int
 
 
@@ -65,7 +64,7 @@ class OneStepSolver(Solver):
 
         # calculate this iteration's current time and update corresponding
         # value in time_mesh
-        self.current_time = round(self.time_mesh[step_counter - 1] + this_step_length, self.precision)
+        self.current_time = self.time_mesh[step_counter - 1] + this_step_length
         self.time_mesh[step_counter] = self.current_time
 
         # calculate this iteration's approximation value
@@ -86,6 +85,11 @@ class OneStepSolver(Solver):
 
 
 class ForwardEulerSolver(OneStepSolver):
+
+    def __str__(self):
+        return "Forward Euler"
+
+
     def __init__(self, ivp, end_time, step_size, step_tol=1e-4):
         super().__init__(ivp, end_time, step_size, step_tol=step_tol)
         self.method_type = MethodType.explicit
@@ -113,6 +117,10 @@ class ForwardEulerSolver(OneStepSolver):
 
 
 class BackwardEulerSolver(OneStepSolver):
+
+    def __str__(self):
+        return "Backward Euler"
+
     def __init__(self, ivp, end_time, step_size, step_tol=1e-4):
         super().__init__(ivp, end_time, step_size, step_tol=step_tol)
         self.method_type = MethodType.implicit
@@ -140,7 +148,7 @@ class BackwardEulerSolver(OneStepSolver):
         # function that needs to be "solved"
         g_next = lambda u_next, derivative, t_next: u_next - u_i - step_size * derivative(u_next, t_next)
 
-        return opt.newton(g_next, u_guess, args=(self.ivp.ode.function, self.time_mesh[this_step]))
+        return opt.fsolve(g_next, u_guess, args=(self.ivp.ode.function, self.time_mesh[this_step]))
 
 
     def pc_single_iteration(self, o_value_mesh, o_time_mesh, this_step, o_derivative_mesh=None):
@@ -157,6 +165,9 @@ class BackwardEulerSolver(OneStepSolver):
 
 
 class RungeKuttaFourthSolver(OneStepSolver):
+
+    def __str__(self):
+        return "Runge-Kutta 4-Stage"
 
     def __init__(self, ivp, end_time, step_size, step_tol=1e-4):
         super().__init__(ivp, end_time, step_size, step_tol=step_tol)

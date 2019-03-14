@@ -14,7 +14,8 @@ class Solution(object):
         self.dimension = self.value_mesh.shape[1]
         self.method_title = method_title
 
+
     def __str__(self):
-        return str(self.value_mesh)
+        return self.method_title
 
 

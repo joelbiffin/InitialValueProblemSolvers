@@ -103,7 +103,10 @@ class MultiStepSolver(Solver):
 
 
 
-class AdamsBashforthSecondSolver(MultiStepSolver):
+class AdamsBashforthTwoSolver(MultiStepSolver):
+
+    def __str__(self):
+        return "2-Step Adams-Bashforth"
 
     def __init__(self, ivp, one_step_solver, end_time, step_size):
         super().__init__(ivp, one_step_solver, end_time, step_size, 2)
@@ -127,6 +130,12 @@ class AdamsBashforthSecondSolver(MultiStepSolver):
 
 
     def pc_single_iteration(self, o_value_mesh, o_time_mesh, this_step, o_derivative_mesh=None):
+        """ To be called from a Predictor-Corrector method where the P-C class
+            updates its own value and time meshes and passes them to this method.
+            When the predictor-corrector wishes to use an adaptive step-size,
+            this method remains unchanged as the formula which returns our value
+            has, hard-coded, interpolants which account for change in step-size.
+        """
         u_i, t_i, f_i = (o_value_mesh[this_step - 1],
                          o_time_mesh[this_step - 1],
                          o_derivative_mesh[this_step - 1])
@@ -138,14 +147,17 @@ class AdamsBashforthSecondSolver(MultiStepSolver):
                                                             this_step,
                                                             o_derivative_mesh)
 
-        step_size = o_time_mesh[this_step] - t_i
-        f_last = o_derivative_mesh[this_step - 2]
+        # TODO: ensure that t_next is put into the time mesh before corrector step is called
+        f_last, t_last, t_next = (o_derivative_mesh[this_step - 2],
+                                  o_time_mesh[this_step - 2],
+                                  o_time_mesh[this_step])
 
-        return u_i + step_size * ((3/2.0)*f_i - (1/2.0)*f_last)
+        h_last, h_i = (t_i - t_last, t_next - t_i)
+        return u_i + (h_i / (2*h_last)) * (f_i*(2*h_last + h_i) - f_last*h_i)
 
 
 
-class AdamsBashforthThirdSolver(MultiStepSolver):
+class AdamsBashforthThreeSolver(MultiStepSolver):
 
     def __init__(self, ivp, one_step_solver, end_time, step_size):
         super().__init__(ivp, one_step_solver, end_time, step_size, 3)
@@ -192,11 +204,15 @@ class AdamsBashforthThirdSolver(MultiStepSolver):
 
 
 
-class AdamsMoultonSecondSolver(MultiStepSolver):#
+class AdamsMoultonOneSolver(MultiStepSolver):#
+
+    def __str__(self):
+        return "Trapezoidal"
 
     def __init__(self, ivp, one_step_solver, end_time, step_size):
         super().__init__(ivp, one_step_solver, end_time, step_size, 2)
         self.method_type = MethodType.implicit
+        self.method_order = 2
         self.error_constant = -1 / 12.0
 
 
@@ -237,7 +253,7 @@ class AdamsMoultonSecondSolver(MultiStepSolver):#
         return u_i + (step_size / 2.0) * (f_next + f_i)
 
 
-class AdamsMoultonThirdSolver(MultiStepSolver):#
+class AdamsMoultonTwoSolver(MultiStepSolver):#
 
     def __init__(self, ivp, one_step_solver, end_time, step_size):
         super().__init__(ivp, one_step_solver, end_time, step_size, 3)

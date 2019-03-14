@@ -33,7 +33,7 @@ print(pred_corr_slv.time_mesh)
 
 
 
-comparison = ResultsComparator(pred_corr_slv.solution, true_value)
+comparison = ResultsComparator(pred_corr_slv.solution, true_solution=true_value)
 comparison.print_result_graphs()
 
 

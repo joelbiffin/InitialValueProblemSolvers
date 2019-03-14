@@ -16,6 +16,10 @@ class PredictorCorrectorSolver(Solver):
     adaptive: bool
 
 
+    def __str__(self):
+        return str(self.explicit_solver) + "-" + str(self.implicit_solver) + " (Predictor-Corrector)"
+
+
     def __init__(self, explicit_solver, implicit_solver, adaptive=False):
         # initialising solver type
         self.method_type = MethodType.predictor_corrector
@@ -25,7 +29,7 @@ class PredictorCorrectorSolver(Solver):
 
         # boolean for whether the method uses adaptive step size or not
         self.adaptive = adaptive
-        self.step_tolerance = self.explicit_solver.step_tol
+        self.step_tol = self.explicit_solver.step_tol
 
         # making sure given solvers have correct type
         self.check_explicit_implicit()
@@ -67,7 +71,7 @@ class PredictorCorrectorSolver(Solver):
             # performs operations on instance variables
             self.forward_step(step_counter)
 
-        self.solution = Solution(self.time_mesh, self.value_mesh)
+        self.solution = Solution(self.time_mesh, self.value_mesh, str(self))
 
 
 
@@ -104,11 +108,16 @@ class PredictorCorrectorSolver(Solver):
                                                                   self.derivative_mesh)
 
         if self.adaptive:
-            milnes_device = self.milnes_constant \
-                            * (np.linalg.norm(prediction - correction, 1))
+            print(prediction)
+            print(correction)
+
             diff = np.linalg.norm(prediction - correction, 1)
 
-            if diff >= self.step_tol:
+
+            milnes_device = self.milnes_constant * diff
+            print(self.milnes_constant)
+
+            if diff >= 1.1*self.step_tol or diff <= 0.1*self.step_tol:
                 self.adapt_step_size(this_step_length, milnes_device)
             else:
                 print("No need to adapt")
@@ -123,10 +132,10 @@ class PredictorCorrectorSolver(Solver):
             self.derivative_mesh[step_counter] = derivative
 
 
-    def adapt_step_size(self, this_step_length, milnes_device):
+    def adapt_step_size(self, this_step_length, diff):
         self.step_size = this_step_length \
-                         * math.pow((math.fabs(self.step_tolerance / milnes_device)),
-                                                     1 / (self.implicit_solver.step_number + 2))
+                         * math.pow((math.fabs(self.step_tol / diff)),
+                                    1 / (self.implicit_solver.step_number + 2))
 
 
 

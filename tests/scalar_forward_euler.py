@@ -26,7 +26,7 @@ slv.solve()
 
 
 
-comparison = ResultsComparator(slv.solution, true_value)
+comparison = ResultsComparator(slv.solution, true_solution=true_value)
 comparison.print_result_graphs()
 
 comparison.compute_local_truncation_errors()

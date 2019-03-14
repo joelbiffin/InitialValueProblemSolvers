@@ -40,9 +40,11 @@ class Solver(object):
         self.current_time = self.ivp.initial_time
         self.end_time = end_time
 
+        self.dimension = self.ivp.get_dimension()
+
         # produces empty time and value meshes
         self.time_mesh = self.build_time_mesh()
-        self.value_mesh = self.build_value_mesh(self.ivp.get_dimension())
+        self.value_mesh = self.build_value_mesh()
 
         self.step_tol = step_tol
         self.method_type = MethodType.unspecified
@@ -58,8 +60,8 @@ class Solver(object):
         return np.zeros(self.max_mesh_size())
 
 
-    def build_value_mesh(self, dimension):
-        return np.zeros((self.max_mesh_size(), dimension))
+    def build_value_mesh(self):
+        return np.zeros((self.max_mesh_size(), self.dimension))
 
 
     def print_solution(self):
