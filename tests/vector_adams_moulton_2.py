@@ -5,7 +5,7 @@ from src.ivp import IVP
 from src.ode import ODE
 from src.results import ResultsComparator
 from src.one_step_solvers import ForwardEulerSolver, RungeKuttaFourthSolver
-from src.multi_step_solvers import AdamsBashforthTwoSolver
+from src.multi_step_solvers import AdamsMoultonOneSolver
 
 f = lambda u, t: np.array([
     u[0] + u[1] - t,
@@ -22,14 +22,14 @@ de = ODE(f)
 u_0 = np.array([2.5, -2.5])
 t_0 = 0
 
-step = 0.001
+step = 0.0001
 t_n = 3
 
 
 problem = IVP(de, u_0, t_0)
 
 first_step_slv = ForwardEulerSolver(problem, t_n, step)
-adams_slv = AdamsBashforthTwoSolver(problem, first_step_slv, t_n, step)
+adams_slv = AdamsMoultonOneSolver(problem, first_step_slv, t_n, step)
 
 adams_slv.solve()
 

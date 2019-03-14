@@ -4,7 +4,7 @@ import numpy as np
 from src.ivp import IVP
 from src.ode import ODE
 from src.results import ResultsComparator
-from src.solver import ForwardEulerSolver
+from src.one_step_solvers import ForwardEulerSolver
 
 
 
@@ -24,19 +24,15 @@ u_0 = np.array([2.5, -2.5])
 t_0 = 0
 
 step = 0.25
-precision = 2
 t_n = 3
 
 
 problem = IVP(de, u_0, t_0)
 
-slv = ForwardEulerSolver(problem, t_n, step, precision)
-
+slv = ForwardEulerSolver(problem, t_n, step)
 slv.solve()
 
-print(slv.solution.value_mesh)
-
-comparison = ResultsComparator(slv.solution, true_value)
+comparison = ResultsComparator(slv.solution, true_solution=true_value)
 comparison.print_result_graphs()
 
 

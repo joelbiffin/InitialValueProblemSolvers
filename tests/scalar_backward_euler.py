@@ -17,13 +17,12 @@ u_0 = np.array([1.4])
 t_0 = 0
 
 step = 0.5
-precision = 1
 t_n = 10
 
 
 problem = IVP(de, u_0, t_0)
 
-slv = BackwardEulerSolver(problem, t_n, step, precision)
+slv = BackwardEulerSolver(problem, t_n, step)
 
 slv.solve()
 print(slv.solution)
@@ -33,7 +32,7 @@ print(slv.solution)
 
 
 
-comparison = ResultsComparator(slv.solution, true_value)
+comparison = ResultsComparator(slv.solution, true_solution=true_value)
 comparison.print_result_graphs()
 
 
