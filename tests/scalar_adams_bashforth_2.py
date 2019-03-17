@@ -31,15 +31,8 @@ adams_slv = AdamsBashforthTwoSolver(problem, first_step_slv, t_n, step)
 adams_slv.solve()
 
 
-
-# def true_value(t):
-#    return math.exp(-1*t)
-
-adams_slv.print_solution()
-
-forward_comparison = ResultsComparator(adams_slv.solution, true_solution=true_value)
-forward_comparison.print_result_graphs()
-
+forward_comparison = ResultsComparator([adams_slv], true_solution=true_value)
 forward_comparison.compute_local_truncation_errors()
+forward_comparison.print_result_graphs()
 forward_comparison.graph_local_truncation_errors()
 

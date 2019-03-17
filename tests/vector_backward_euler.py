@@ -32,7 +32,7 @@ problem = IVP(de, u_0, t_0)
 slv = BackwardEulerSolver(problem, t_n, step)
 slv.solve()
 
-comparison = ResultsComparator(slv.solution, true_solution=true_value)
+comparison = ResultsComparator([slv], true_solution=true_value)
 comparison.print_result_graphs()
 
 

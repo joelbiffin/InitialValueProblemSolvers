@@ -1,4 +1,4 @@
-import math as m
+import math
 import numpy as np
 
 from src.multi_step_solvers import AdamsBashforthTwoSolver
@@ -42,21 +42,51 @@ Case study 2: Gravitational 2-body Problem
 """
 
 ### Setting up ####################################################################################
+G = 6.67408e-11
+m_1 = 5.972e24
+m_2 = 7.347e22
+r_earth = 6.371e6
+r_moon = 1.737e6
+
+u_initial = np.array([0, 0, 0, 0, 0, 0, r_earth+r_moon+370300e3, 0, 0, 0, 24*3.683e3, 0])
 
 
+
+def ode_system(u, t):
+    r = np.linalg.norm(u[0:3] - u[6:9], 2)
+    print(r)
+    constant_1 = -1*(G*m_2) / (math.pow(r, 3))
+    constant_2 = -1*(G*m_1) / (math.pow(r, 3))
+    return np.array([
+        u[6],
+        u[7],
+        u[8],
+        constant_1 * (u[0] - u[6]),
+        constant_1 * (u[1] - u[7]),
+        constant_1 * (u[2] - u[8]),
+        u[0],
+        u[1],
+        u[2],
+        constant_2 * (u[6] - u[0]),
+        constant_2 * (u[7] - u[1]),
+        constant_2 * (u[8] - u[2])
+    ])
+
+"""
 ode_system = lambda u, t: np.array([
-    u[1],
-    30 * m.cos(2 * t) - 2 * u[0] - 2 * u[1]
+    u[6],
+    u[7],
+    u[8],
+    (-1*(G*m_2) / (r*r*r))*(u[0]-u[6]),
+    (-1*(G*m_2) / (r*r*r))*(u[1]-u[7])
 ])
 
-initial_values = np.array([0, 10])
+"""
 initial_time = 0
-
-end_time = 10
-# step_le = 0.25
+end_time = 100
 
 differential_equation = ODE(ode_system)
-initial_value_problem = IVP(differential_equation, initial_values, initial_time)
+initial_value_problem = IVP(differential_equation, u_initial, initial_time)
 
 
 ### Preparing Solvers #############################################################################
@@ -75,7 +105,7 @@ def compare_one_step_methods(step_size):
     predictor_corrector = PredictorCorrectorSolver(
         ForwardEulerSolver(initial_value_problem, end_time, step_size, step_tol=1e-1),
         BackwardEulerSolver(initial_value_problem, end_time, step_size),
-        adaptive=True)
+        adaptive=False)
 
     forward_euler.solve()
     backward_euler.solve()
@@ -99,9 +129,11 @@ comparison.print_result_graphs()
 """
 
 compare_one_step_methods(.2)
-comparison = ResultsComparator([forward_euler, backward_euler, runge_kutta,
-                                predictor_corrector, adams_bashforth],
-                               true_solution=true_solution)
+#comparison = ResultsComparator([forward_euler, backward_euler, runge_kutta,
+#                                predictor_corrector, adams_bashforth],
+#                               true_solution=None)
+
+comparison = ResultsComparator([runge_kutta], true_solution=None)
 comparison.print_result_graphs()
 
 

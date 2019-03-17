@@ -279,7 +279,7 @@ class AdamsMoultonTwoSolver(MultiStepSolver):#
         g_next = lambda u_next, derivative, t_next: \
             u_next - u_i - (step_size / 12.0) * (5*derivative(u_next, t_next) + 8*f_i - f_last)
 
-        return opt.newton(g_next, u_guess, args=(self.ivp.ode.function, self.time_mesh[this_step]))
+        return opt.fsolve(g_next, u_guess, args=(self.ivp.ode.function, self.time_mesh[this_step]))
 
 
     def pc_single_iteration(self, o_value_mesh, o_time_mesh, this_step, o_derivative_mesh=None):

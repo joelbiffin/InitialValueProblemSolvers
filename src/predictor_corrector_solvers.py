@@ -108,14 +108,8 @@ class PredictorCorrectorSolver(Solver):
                                                                   self.derivative_mesh)
 
         if self.adaptive:
-            print(prediction)
-            print(correction)
-
             diff = np.linalg.norm(prediction - correction, 1)
-
-
             milnes_device = self.milnes_constant * diff
-            print(self.milnes_constant)
 
             if diff >= 1.1*self.step_tol or diff <= 0.1*self.step_tol:
                 self.adapt_step_size(this_step_length, milnes_device)

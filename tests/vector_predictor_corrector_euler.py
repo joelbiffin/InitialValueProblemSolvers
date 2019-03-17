@@ -34,7 +34,7 @@ corr_slv = BackwardEulerSolver(problem, t_n, step)
 pred_corr_slv = PredictorCorrectorSolver(pred_slv, corr_slv)
 pred_corr_slv.solve()
 
-comparison = ResultsComparator(pred_corr_slv.solution, true_solution=true_value)
+comparison = ResultsComparator([pred_corr_slv], true_solution=true_value)
 comparison.print_result_graphs()
 comparison.compute_local_truncation_errors()
 comparison.graph_local_truncation_errors()

@@ -35,7 +35,7 @@ predictor_working.solve()
 
 corr_slv = AdamsMoultonOneSolver(problem, first_step_implicit_slv, t_n, step)
 
-pred_corr_slv = PredictorCorrectorSolver(pred_slv, corr_slv, adaptive=True)
+pred_corr_slv = PredictorCorrectorSolver(pred_slv, corr_slv, adaptive=False)
 pred_corr_slv.solve()
 pred_corr_slv.print_solution()
 

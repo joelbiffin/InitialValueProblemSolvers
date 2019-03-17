@@ -1,9 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
-import sys
-
-
-from src.solution import Solution
+import matplotlib.figure as figure
 
 
 class ResultsComparator(object):
@@ -11,10 +8,11 @@ class ResultsComparator(object):
     approximations: list
 
 
-    def __init__(self, approximations, true_solution=None):
+    def __init__(self, approximations, true_solution=None, step_length=None):
         # solution class containing value and time meshes
         self.approximations = approximations
-        print(type(approximations[0]))
+
+        self.step_length = step_length
         
         if true_solution is not None:
             self.setup_true_solution(true_solution)
@@ -43,31 +41,35 @@ class ResultsComparator(object):
         """ Prints out all graphs containing true solution and our
             approximation's values.
         """
-        for i, approx in enumerate(self.approximations):
-            for j in range(approx.dimension):
-                self.pointwise_plot(i, j)
+        for j in range(self.approximations[0].dimension):
+            self.pointwise_plot(j)
 
 
-    def pointwise_plot(self, approx_id, system_id):
+    def pointwise_plot(self, system_id):
         """ Plots the approximation's values at all its mesh's points, the true
             solution is also plotted but only at these same mesh points (no
             values calculated between nodes in mesh).
                 i.e. u_true(t_i) for all i, and
                      u_approx(t_i) for all i will be plotted.
         """
-        # local vars for readability
-        t = np.trim_zeros(self.approximations[approx_id].time_mesh, "b")
-        pseudo_continuous_t = np.linspace(t[0], t[-1], t.size * 100)
 
-        u_approx = self.approximations[approx_id].value_mesh[:t.size]
-        u_true = self.compute_true_values_pointwise(pseudo_continuous_t)
+        t = np.trim_zeros(self.approximations[0].time_mesh, "b")
+        plt.figure(figsize=(12, 8))
 
-        # graph headings
-        plt.title(self.approximations[approx_id])
-        plt.plot(t, u_approx[:, system_id], 'o-',
-                 color="red", label="Approximation")
-        plt.plot(pseudo_continuous_t, u_true[:, system_id],
-                 color="green", label="True Solution")
+        if self.step_length is None:
+            plt.title("Comparison of ODE Methods")
+        else:
+            plt.title("Comparison of ODE Methods h=("+ str(self.step_length)+ ")")
+
+        for approx in self.approximations:
+            u_approx = approx.value_mesh[:t.size]
+            plt.plot(t, u_approx[:, system_id], "o-", label=str(approx))
+
+        if self.true_solution is not None:
+            pseudo_continuous_t = np.linspace(t[0], t[-1], t.size*50)
+            u_true = self.compute_true_values_pointwise(pseudo_continuous_t)
+            plt.plot(pseudo_continuous_t, u_true[:, system_id], label="True Solution")
+
         plt.legend(loc="upper right")
         plt.grid()
         plt.show()
@@ -84,22 +86,22 @@ class ResultsComparator(object):
 
         return true_values
 
-    """
+
     def compute_local_truncation_errors(self):
         self.local_truncation_error = self.approximations[0].value_mesh - self.true_node_mesh
         return self.local_truncation_error
 
 
     def graph_local_truncation_errors(self):
-        for i in range(self.approximation.dimension):
-            plt.title("LTE in "+ str(self.approximation.method_title))
+        for i in range(self.approximations[0].dimension):
+            plt.title("LTE in "+ str(self.approximations[0]))
             plt.ylabel("Local Truncation Error")
             plt.xlabel("t")
-            plt.plot(self.approximation.time_mesh, self.local_truncation_error[:, i], color="red", label="LTE")
+            plt.plot(self.approximations[0].time_mesh, self.local_truncation_error[:, i], color="red", label="LTE")
             plt.legend(loc="upper right")
             plt.grid()
             plt.show()
 
-    """
+
 
 
