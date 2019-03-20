@@ -37,5 +37,5 @@ runge_slv.print_solution()
 forward_comparison = ResultsComparator([runge_slv], true_solution=true_value)
 forward_comparison.print_result_graphs()
 
-forward_comparison.compute_local_truncation_errors()
-forward_comparison.graph_local_truncation_errors()
+forward_comparison.compute_global_truncation_errors()
+forward_comparison.graph_global_truncation_errors()

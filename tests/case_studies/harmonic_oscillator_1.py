@@ -1,7 +1,7 @@
 import math as m
 import numpy as np
 
-from src.multi_step_solvers import AdamsBashforthTwoSolver
+from src.multi_step_solvers import AdamsBashforthTwoSolver, AdamsMoultonTwoSolver
 from src.ode import ODE
 from src.ivp import IVP
 from src.one_step_solvers import ForwardEulerSolver, BackwardEulerSolver, RungeKuttaFourthSolver
@@ -46,7 +46,6 @@ initial_values = np.array([0, 10])
 initial_time = 0
 
 end_time = 10
-#step_le = 0.25
 
 differential_equation = ODE(ode_system)
 initial_value_problem = IVP(differential_equation, initial_values, initial_time)
@@ -54,8 +53,8 @@ initial_value_problem = IVP(differential_equation, initial_values, initial_time)
 
 ### Preparing Solvers #############################################################################
 
-def compare_one_step_methods(step_size):
-    global forward_euler, backward_euler, runge_kutta, predictor_corrector, adams_bashforth
+def compare_methods(step_size):
+    global forward_euler, backward_euler, runge_kutta, predictor_corrector, adams_bashforth, adams_moulton
 
     forward_euler = ForwardEulerSolver(initial_value_problem, end_time, step_size)
     backward_euler = BackwardEulerSolver(initial_value_problem, end_time, step_size)
@@ -64,39 +63,40 @@ def compare_one_step_methods(step_size):
         initial_value_problem,
         RungeKuttaFourthSolver(initial_value_problem, end_time, step_size),
         end_time, step_size)
+    adams_moulton = AdamsMoultonTwoSolver(
+        initial_value_problem,
+        RungeKuttaFourthSolver(initial_value_problem, end_time, step_size),
+        end_time, step_size)
 
     predictor_corrector = PredictorCorrectorSolver(
         ForwardEulerSolver(initial_value_problem,end_time, step_size, step_tol=1),
         BackwardEulerSolver(initial_value_problem, end_time, step_size),
-        adaptive=False)
+        adaptive=False, )
 
     forward_euler.solve()
     backward_euler.solve()
     runge_kutta.solve()
     adams_bashforth.solve()
+    adams_moulton.solve()
     predictor_corrector.solve()
+
+    print("{} took {}s to solve.".format(forward_euler, forward_euler.solve_time))
+    print("{} took {}s to solve.".format(backward_euler, backward_euler.solve_time))
+    print("{} took {}s to solve.".format(runge_kutta, runge_kutta.solve_time))
+    print("{} took {}s to solve.".format(adams_bashforth, adams_bashforth.solve_time))
+    print("{} took {}s to solve.".format(adams_moulton, adams_moulton.solve_time))
+    print("{} took {}s to solve.".format(predictor_corrector, predictor_corrector.solve_time))
 
 
 ### Comparison of results #########################################################################
 
-"""compare_one_step_methods(0.5)
-comparison = ResultsComparator([forward_euler, backward_euler, runge_kutta],
-                               true_solution=true_solution)
-comparison.print_result_graphs()
-
-
-compare_one_step_methods(0.25)
-comparison = ResultsComparator([forward_euler, backward_euler, runge_kutta],
-                               true_solution=true_solution)
-comparison.print_result_graphs()
-"""
-this_h = 0.3
-compare_one_step_methods(this_h)
-comparison = ResultsComparator([forward_euler, backward_euler, runge_kutta,
-                                predictor_corrector, adams_bashforth],
+this_h = 0.1
+compare_methods(this_h)
+comparison = ResultsComparator([forward_euler, backward_euler, runge_kutta, predictor_corrector, adams_bashforth, adams_moulton],
                                step_length=this_h, true_solution=true_solution)
 comparison.print_result_graphs()
 
 
-
+comparison.compute_global_truncation_errors()
+comparison.graph_global_truncation_errors()
 

@@ -15,6 +15,9 @@ class IVP(object):
     initial_time: float
     dimension: int
 
+    def __str__(self):
+        return "Initial Conditions: u(" + str(self.initial_time) + ") = " + str(self.initial_value)
+
 
     def __init__(self, ode, initial_value, initial_time):
         """ Setting instance variables """

@@ -5,6 +5,7 @@ import numpy as np
 from abc import abstractmethod, ABCMeta
 from src.ivp import IVP
 from src.solution import Solution
+from util.timelogging import TimedSolver
 
 
 class MethodType(Enum):
@@ -15,7 +16,7 @@ class MethodType(Enum):
 
 
 
-class Solver(object):
+class Solver(TimedSolver):
     """ Class representing an abstract numerical solver (method or group of
         methods) for a given initial value problem
     """
@@ -55,17 +56,15 @@ class Solver(object):
         # creates empty solution object for print method
         self.solution = Solution(self.time_mesh, self.value_mesh, str(self))
 
+        self.time = [None] * 2
+
 
     def build_time_mesh(self):
         return np.zeros(self.max_mesh_size())
 
 
     def build_value_mesh(self):
-        return np.zeros((self.max_mesh_size(), self.dimension))
-
-
-    def print_solution(self):
-        print(self.solution)
+        return np.zeros((self.max_mesh_size()*10, self.dimension))
 
 
     def update_value(self, step_counter, correction, call_from=MethodType.unspecified):

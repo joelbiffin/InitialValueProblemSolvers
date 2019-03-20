@@ -46,7 +46,7 @@ ode_system = lambda u, t: np.array([
 initial_values = np.array([0, 0])
 initial_time = 0
 
-end_time = m.pi * 10
+end_time = m.pi
 # step_le = 0.25
 
 differential_equation = ODE(ode_system)
@@ -98,7 +98,7 @@ comparison = ResultsComparator([forward_euler, backward_euler, runge_kutta],
 comparison.print_result_graphs()
 """
 
-step_sizes = [0.001]
+step_sizes = [0.2]
 
 for h in step_sizes:
     compare_one_step_methods(h)
@@ -106,8 +106,8 @@ for h in step_sizes:
                                     predictor_corrector, adams_bashforth, adams_moulton],
                                     step_length=h, true_solution=true_solution)
     comparison.print_result_graphs()
-    comparison.setup_local_truncation_error()
-    comparison.graph_local_truncation_errors()
+    comparison.setup_global_truncation_error()
+    comparison.graph_global_truncation_errors()
 
 
 

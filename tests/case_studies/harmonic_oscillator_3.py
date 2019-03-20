@@ -101,8 +101,8 @@ for h in step_sizes:
                                     predictor_corrector, adams_bashforth, adams_moulton],
                                     step_length=h, true_solution=true_solution)
     comparison.print_result_graphs()
-    comparison.setup_local_truncation_error()
-    comparison.graph_local_truncation_errors()
+    comparison.setup_global_truncation_error()
+    comparison.graph_global_truncation_errors()
 
 
 

@@ -8,8 +8,14 @@ from src.one_step_solvers import BackwardEulerSolver
 
 
 g = lambda u, t: np.array([-1*u[0]])
+"""
 h = lambda u, t: np.array([-2*u[0] + math.cos(t)])
 true_value = lambda t: math.exp(-2*t) + (1/5.0)*(2*math.cos(t) + math.sin(t))
+"""
+
+h = lambda u, t: np.array([1-t])
+true_value = lambda t: t - 0.5*t*t
+
 
 de = ODE(h)
 
@@ -33,5 +39,5 @@ comparison = ResultsComparator([slv], true_solution=true_value)
 comparison.print_result_graphs()
 
 
-comparison.compute_local_truncation_errors()
-comparison.graph_local_truncation_errors()
+comparison.compute_global_truncation_errors()
+comparison.graph_global_truncation_errors()

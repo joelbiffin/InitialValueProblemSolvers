@@ -5,36 +5,35 @@ import matplotlib.figure as figure
 
 class ResultsComparator(object):
 
-    approximations: list
-
-
-    def __init__(self, approximations, true_solution=None, step_length=None):
+    def __init__(self, approximations: list, true_solution=None, step_length=None, has_lte=False):
         # solution class containing value and time meshes
-        self.approximations = approximations
+        self.approximations = list(approximations)
 
         self.step_length = step_length
-        
+
         if true_solution is not None:
             self.setup_true_solution(true_solution)
-            self.setup_local_truncation_error()
+            self.setup_global_truncation_error()
         else:
             self.true_solution = None
             self.true_node_mesh = None
-            self.local_truncation_error = None
+            self.global_truncation_error = None
 
+        if has_lte:
+            self.graph_local_truncation_errors()
 
     def setup_true_solution(self, true_solution):
         # function representing the true solution
         self.true_solution = true_solution
         # mesh containing the true values at all our mesh points
-        self.true_node_mesh = self.compute_true_values_pointwise(self.approximations[0].time_mesh)
+        self.true_node_mesh = self.compute_true_values_pointwise(
+            np.trim_zeros(self.approximations[0].time_mesh, "b"))
 
 
-    def setup_local_truncation_error(self):
+    def setup_global_truncation_error(self):
         # initialising local_truncation_error mesh
-        self.local_truncation_error = np.zeros((
-            self.approximations[0].time_mesh.size, self.approximations[0].dimension
-        ))
+        self.global_truncation_error \
+            = [np.zeros_like(self.approximations[0])] * len(self.approximations)
 
 
     def print_result_graphs(self):
@@ -63,7 +62,12 @@ class ResultsComparator(object):
 
         for approx in self.approximations:
             u_approx = approx.value_mesh[:t.size]
-            plt.plot(t, u_approx[:, system_id], "o-", label=str(approx))
+
+            if u_approx.shape[0] < t.size:
+                t = t[:u_approx.shape[0]]
+
+
+            plt.plot(t, u_approx[:t.size, system_id], "o-", label=str(approx))
 
         if self.true_solution is not None:
             pseudo_continuous_t = np.linspace(t[0], t[-1], t.size*50)
@@ -87,21 +91,48 @@ class ResultsComparator(object):
         return true_values
 
 
-    def compute_local_truncation_errors(self):
-        self.local_truncation_error = self.approximations[0].value_mesh - self.true_node_mesh
-        return self.local_truncation_error
+    def compute_global_truncation_errors(self):
+        for i, approx in enumerate(self.approximations):
+            self.global_truncation_error[i] \
+                = (approx.value_mesh[:self.true_node_mesh.shape[0]] - self.true_node_mesh)
+
+        return np.array(self.global_truncation_error)
 
 
-    def graph_local_truncation_errors(self):
+    def graph_global_truncation_errors(self):
         for i in range(self.approximations[0].dimension):
-            plt.title("LTE in "+ str(self.approximations[0]))
-            plt.ylabel("Local Truncation Error")
+            plt.figure(figsize=(12, 8))
+            plt.title("Global Truncation Errors")
+            plt.ylabel("Global Truncation Error")
             plt.xlabel("t")
-            plt.plot(self.approximations[0].time_mesh, self.local_truncation_error[:, i], color="red", label="LTE")
+
+            t = np.trim_zeros(self.approximations[0].time_mesh, "b")
+
+            for j, error in enumerate(self.global_truncation_error):
+                plt.plot(t, error[:t.size, i],
+                         label="GTE in " + str(self.approximations[j]))
+
             plt.legend(loc="upper right")
             plt.grid()
             plt.show()
 
+
+    def graph_local_truncation_errors(self):
+        for i in range(self.approximations[0].dimension):
+            plt.figure(figsize=(12, 8))
+            plt.title("Estimated Local Truncation Error")
+            plt.ylabel("LTE")
+            plt.xlabel("t")
+
+            t = np.trim_zeros(self.approximations[0].time_mesh, "b")
+            lte = self.approximations[0].approx_lte[:t.size]
+
+            plt.plot(t, lte[:t.size, i], "o-",
+                     label="LTE in " + str(self.approximations[0]))
+
+            plt.legend(loc="upper right")
+            plt.grid()
+            plt.show()
 
 
 

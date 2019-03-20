@@ -18,7 +18,7 @@ u_0 = np.array([1.4])
 t_0 = 0
 
 step = 0.2
-t_n = 12
+t_n = 30
 
 
 
@@ -30,9 +30,6 @@ first_step_implicit_slv = BackwardEulerSolver(problem, t_n, step)
 
 pred_slv = AdamsBashforthTwoSolver(problem, first_step_explicit_slv, t_n, step)
 
-predictor_working = AdamsBashforthTwoSolver(problem, first_step_explicit_slv, t_n, step)
-predictor_working.solve()
-
 corr_slv = AdamsMoultonOneSolver(problem, first_step_implicit_slv, t_n, step)
 
 pred_corr_slv = PredictorCorrectorSolver(pred_slv, corr_slv, adaptive=False)
@@ -41,7 +38,7 @@ pred_corr_slv.print_solution()
 
 
 
-comparison = ResultsComparator([pred_corr_slv, predictor_working], true_solution=true_value)
+comparison = ResultsComparator([pred_corr_slv], true_solution=true_value)
 comparison.print_result_graphs()
 
 

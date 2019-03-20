@@ -2,6 +2,8 @@ import numpy as np
 import math
 import scipy.optimize as opt
 
+import matplotlib.pyplot as plt
+import matplotlib.figure as figure
 from abc import abstractmethod
 from src.solution import Solution
 from src.solver import MethodType, Solver
@@ -20,7 +22,6 @@ class MultiStepSolver(Solver):
         """ Initialising variables same as Solver, just with constant step size.
         """
         self.step_size = step_size
-
         # contains how many steps are considered for the ith iteration's approximation
         self.step_number = step_number
 
@@ -29,11 +30,13 @@ class MultiStepSolver(Solver):
 
         super().__init__(ivp, end_time)
 
+        self.step_tol = self.one_step_solver.step_tol
         # builds mesh to contain derivatives evaluated at each step
         self.derivative_mesh = self.build_derivative_mesh(self.ivp.get_dimension())
 
 
     def solve(self):
+        self.start_solve_time()
         # housekeeping
         step_counter = 0
 
@@ -52,6 +55,7 @@ class MultiStepSolver(Solver):
             # performs operations on instance variables
             self.forward_step(step_counter)
 
+        self.end_solve_time()
         self.solution = Solution(self.time_mesh, self.value_mesh)
 
 
@@ -65,7 +69,7 @@ class MultiStepSolver(Solver):
         """
         # note that we use the literal 0 WLOG since we have a fixed step-size
         # in one step methods
-        return math.ceil(
+        return 5*math.ceil(
             (self.end_time - self.ivp.initial_time) / self.next_step_size(0)) + 1
 
 
@@ -102,7 +106,6 @@ class MultiStepSolver(Solver):
         pass
 
 
-
 class AdamsBashforthTwoSolver(MultiStepSolver):
 
     def __str__(self):
@@ -126,7 +129,7 @@ class AdamsBashforthTwoSolver(MultiStepSolver):
             return self.one_step_solver.calculate_next_values(this_step, step_size)
 
         f_last = self.derivative_mesh[this_step - 2]
-        return u_i + step_size * ((3 / 2.0)*f_i - (1 / 2.0)*f_last)
+        return u_i + step_size * ((3*f_i - f_last) / 2.0)
 
 
     def pc_single_iteration(self, o_value_mesh, o_time_mesh, this_step, o_derivative_mesh=None):
@@ -153,8 +156,7 @@ class AdamsBashforthTwoSolver(MultiStepSolver):
                                   o_time_mesh[this_step])
 
         h_last, h_i = (t_i - t_last, t_next - t_i)
-        return u_i + (h_i / (2*h_last)) * (f_i*(2*h_last + h_i) - f_last*h_i)
-
+        return u_i + (h_i * (f_i*(2*h_last + h_i) - f_last*h_i)) / (2*h_last)
 
 
 class AdamsBashforthThreeSolver(MultiStepSolver):
@@ -178,7 +180,7 @@ class AdamsBashforthThreeSolver(MultiStepSolver):
         f_last, f_llast = (self.derivative_mesh[this_step - 2],
                            self.derivative_mesh[this_step - 3])
 
-        return u_i + (step_size / 12.0) * (23*f_i - 16*f_last + 5*f_llast)
+        return u_i + (step_size * (23*f_i - 16*f_last + 5*f_llast)) / 12.0
 
 
     def pc_single_iteration(self, o_value_mesh, o_time_mesh, this_step, o_derivative_mesh=None):
@@ -197,14 +199,10 @@ class AdamsBashforthThreeSolver(MultiStepSolver):
         f_last, f_llast = (o_derivative_mesh[this_step - 2],
                           o_derivative_mesh[this_step - 3])
 
-        return u_i + (step_size / 12.0) * (23*f_i - 16*f_last + 5*f_llast)
+        return u_i + (step_size * (23*f_i - 16*f_last + 5*f_llast) / 12.0)
 
 
-
-
-
-
-class AdamsMoultonOneSolver(MultiStepSolver):#
+class AdamsMoultonTwoSolver(MultiStepSolver):#
 
     def __str__(self):
         return "Trapezoidal"
@@ -231,7 +229,7 @@ class AdamsMoultonOneSolver(MultiStepSolver):#
 
         # function that needs to be "solved"
         g_next = lambda u_next, derivative, t_next: \
-            u_next - u_i - (step_size / 2.0) * (derivative(u_next, t_next) + f_i)
+            u_next - u_i - (step_size * (derivative(u_next, t_next) + f_i)) / 2.0
 
         return opt.newton(g_next, u_guess, args=(self.ivp.ode.function, self.time_mesh[this_step]))
 
@@ -250,10 +248,13 @@ class AdamsMoultonOneSolver(MultiStepSolver):#
 
         f_next = o_derivative_mesh[this_step]
 
-        return u_i + (step_size / 2.0) * (f_next + f_i)
+        return u_i + (step_size * (f_next + f_i)) / 2.0
 
 
-class AdamsMoultonTwoSolver(MultiStepSolver):#
+class AdamsMoultonThreeSolver(MultiStepSolver):#
+
+    def __str__(self):
+        return "Adams Moulton 3-Step"
 
     def __init__(self, ivp, one_step_solver, end_time, step_size):
         super().__init__(ivp, one_step_solver, end_time, step_size, 3)
@@ -277,7 +278,7 @@ class AdamsMoultonTwoSolver(MultiStepSolver):#
 
         # function that needs to be "solved"
         g_next = lambda u_next, derivative, t_next: \
-            u_next - u_i - (step_size / 12.0) * (5*derivative(u_next, t_next) + 8*f_i - f_last)
+            u_next - u_i - (step_size * (5*derivative(u_next, t_next) + 8*f_i - f_last)) / 12.0
 
         return opt.fsolve(g_next, u_guess, args=(self.ivp.ode.function, self.time_mesh[this_step]))
 
@@ -297,7 +298,63 @@ class AdamsMoultonTwoSolver(MultiStepSolver):#
         f_next, f_last = (o_derivative_mesh[this_step],
                           o_derivative_mesh[this_step - 2])
 
-        return u_i + (step_size / 12.0) * (5*f_next + 8*f_i - f_last)
+        return u_i + (step_size * (5*f_next + 8*f_i - f_last)) / 12.0
+
+
+class BackwardDifferentiationFormulaTwoSolver(MultiStepSolver):
+
+    def __str__(self):
+        return "BDF-2"
+
+    def __init__(self, ivp, one_step_solver, end_time, step_size):
+        super().__init__(ivp, one_step_solver, end_time, step_size, 2)
+        self.method_type = MethodType.implicit
+        self.method_order = 2
+        # TODO: rework logic with this
+        self.error_constant = 5.0 / 12
+
+
+    def calculate_next_values(self, this_step, step_size, call_from=MethodType.unspecified, u_prediction=None):
+        u_i, t_i, f_i, t_plus_one = (self.value_mesh[this_step - 1],
+                                     self.time_mesh[this_step - 1],
+                                     self.derivative_mesh[this_step - 1],
+                                     self.time_mesh[this_step])
+        step_size = t_plus_one - t_i
+
+        if this_step < self.step_number:
+            return self.one_step_solver.pc_single_iteration(self.value_mesh,
+                                                            self.time_mesh,
+                                                            this_step,
+                                                            self.derivative_mesh)
+            # return self.one_step_solver.calculate_next_values(this_step, step_size)
+
+        u_last = self.derivative_mesh[this_step - 2]
+        u_guess = u_i + step_size * f_i
+
+        print("Step #", this_step, " guess:\t", u_guess)
+
+        # function needing to be solved
+        g_next = lambda u_next, derivative, t_next: u_next - ((4*u_i - u_last + 2*step_size*derivative(u_next, t_plus_one)) / 3.0)
+
+        # u_{i+1} = (4/3)u_i - (1/3)u_last + (2h/3) f(u_{i+1}, t_{i+1})
+        return opt.fsolve(g_next, u_guess, args=(self.ivp.ode.function, t_plus_one))
+
+
+
+    def pc_single_iteration(self, o_value_mesh, o_time_mesh, this_step, o_derivative_mesh=None):
+        u_i, t_i, f_i, t_plus_one = (o_value_mesh[this_step - 1],
+                                     o_time_mesh[this_step - 1],
+                                     o_derivative_mesh[this_step - 1],
+                                     o_time_mesh[this_step])
+        step_size = t_plus_one - t_i
+
+        if this_step < self.step_number:
+            return self.one_step_solver.calculate_next_values(this_step, step_size)
+
+        f_next, u_last = (o_derivative_mesh[this_step],
+                          o_value_mesh[this_step - 2])
+
+        return (4/3.0)*u_i - (u_last / 3.0) + ((2*step_size)/3.0) * f_next
 
 
 

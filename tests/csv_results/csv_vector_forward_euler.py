@@ -18,6 +18,7 @@ true_value = lambda t: np.array([
     (math.sqrt(2) - 1)*math.exp(t*math.sqrt(2)) - (1 + math.sqrt(2)) * math.exp(-1*t*math.sqrt(2)) - 0.5 + 0.5*t
 ])
 """
+
 f = lambda u, t: np.array([
     3*u[0] - 4*u[1],
     4*u[0] -7*u[1]
@@ -42,7 +43,7 @@ problem = IVP(de, u_0, t_0)
 slv = ForwardEulerSolver(problem, t_n, step)
 slv.solve()
 
-comparison = ResultsComparator([slv], true_solution=true_value)
-comparison.print_result_graphs()
+slv.solution.write_to_csv("../../outputs/csv_vector_euler.csv", [0, 1])
+
 
 

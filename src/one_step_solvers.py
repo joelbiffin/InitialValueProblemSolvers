@@ -16,15 +16,19 @@ class OneStepSolver(Solver):
     step_number: int
 
 
-    def __init__(self, ivp, end_time, step_size, step_tol=1e-4):
+    def __init__(self, ivp, end_time, step_size, step_tol=1e-4, two_body=False):
         """ Initialising variables same as Solver, just with constant step size.
         """
         self.step_size = step_size
         self.step_number = 1
         super().__init__(ivp, end_time, step_tol=step_tol)
 
+        self.two_body = two_body
+
 
     def solve(self):
+        self.start_solve_time()
+
         # housekeeping
         step_counter = 0
 
@@ -35,6 +39,10 @@ class OneStepSolver(Solver):
         # loop through iterations approximating solution, storing values and
         # times used in this instance's meshes
         while self.current_time < self.end_time:
+            if self.two_body:
+                if self.ivp.ode.function(self.value_mesh[step_counter], self.time_mesh[step_counter]) is None:
+                    break
+
             # housekeeping variable
             step_counter += 1
             # checking we aren't out of bounds of time mesh
@@ -42,6 +50,7 @@ class OneStepSolver(Solver):
             # performs operations on instance variables
             self.forward_step(step_counter)
 
+        self.end_solve_time()
         self.solution = Solution(self.time_mesh, self.value_mesh)
 
 
@@ -55,7 +64,7 @@ class OneStepSolver(Solver):
         """
         # note that we use the literal 0 WLOG since we have a fixed step-size
         # in one step methods
-        return math.ceil(
+        return 5*math.ceil(
             (self.end_time - self.ivp.initial_time) / self.next_step_size(0)) + 1
 
 
@@ -125,7 +134,6 @@ class BackwardEulerSolver(OneStepSolver):
         super().__init__(ivp, end_time, step_size, step_tol=step_tol)
         self.method_type = MethodType.implicit
         self.method_order = 1
-        self.error_constant = -0.5
 
 
     def calculate_next_values(self, this_step, step_size,
@@ -152,6 +160,7 @@ class BackwardEulerSolver(OneStepSolver):
 
 
     def pc_single_iteration(self, o_value_mesh, o_time_mesh, this_step, o_derivative_mesh=None):
+        prediction = o_value_mesh[this_step]
         u_i = o_value_mesh[this_step - 1]
         t_next = o_time_mesh[this_step]
 
@@ -159,7 +168,7 @@ class BackwardEulerSolver(OneStepSolver):
 
         # note that the value given by our predictor is, for now, stored as the value in
         # o_value_mesh[this_step]
-        f_next = self.ivp.ode.function(o_value_mesh[this_step], t_next)
+        f_next = self.ivp.ode.function(prediction, t_next)
 
         return u_i + step_size * f_next
 
@@ -169,8 +178,8 @@ class RungeKuttaFourthSolver(OneStepSolver):
     def __str__(self):
         return "Runge-Kutta 4-Stage"
 
-    def __init__(self, ivp, end_time, step_size, step_tol=1e-4):
-        super().__init__(ivp, end_time, step_size, step_tol=step_tol)
+    def __init__(self, ivp, end_time, step_size, step_tol=1e-4, two_body=False):
+        super().__init__(ivp, end_time, step_size, step_tol=step_tol, two_body=two_body)
         self.method_type = MethodType.explicit
 
 

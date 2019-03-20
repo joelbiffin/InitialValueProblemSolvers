@@ -23,66 +23,76 @@ Case study 2: Gravitational 2-body Problem
         u_2 = (-G m_2)/(|u_1 - v_1|^3) (u_1-v_1)
         v_1 = v_2
         v_2 = (G m_1).(|u_1 - v_1|^3) (v_1 - u_1,
-      
+
       with initial conditions,
         u_1(0) = 0
         u_2(0) = 10
-        
+
         m_1 is mass of the earth
         m_2 is mass of the moon
-        
-        
+
+
         m_1 = 10
         m_2 = 12
         u_1(0)=20
         u_2(0)=0
         v_1(
-        
+
 
 """
 
 ### Setting up ####################################################################################
 
-m_0 = 5
+m_0 = 6
 m_1 = 5
+m_2 = 3
 
 u_initial = np.array([
     1,
     -1,
-    -0.5,
-    -2,
+    0,
+    0,
+
     -1,
     1,
     0,
-    1
+    0,
+
+    -1,
+    0,
+    0,
+    0
 ])
 
 
 def ode_system(u, t):
-    direction = u[4:6] - u[0:2]
-    r_cubed = pow(np.linalg.norm(direction, 2), 3)
+    direction10 = u[4:6] - u[0:2]
+    direction21 = u[8:10] - u[4:6]
+    direction02 = u[0:2] - u[8:10]
+    r10_cubed = pow(np.linalg.norm(direction10, 2), 3)
+    r21_cubed = pow(np.linalg.norm(direction21, 2), 3)
+    r02_cubed = pow(np.linalg.norm(direction02, 2), 3)
 
-    if r_cubed < 10e-10:
+
+    if (r10_cubed < 10e-10) or (r21_cubed < 10e-10) or (r02_cubed < 10e-10):
         return None
-
-    const_0 = m_1 / r_cubed
-    const_1 = m_0 / r_cubed
 
     return np.array([
         u[2],
         u[3],
-        const_0 * direction[0],
-        const_0 * direction[1],
+        (m_1 * direction10[0]) / r10_cubed - (m_2 * direction02[0]) / r02_cubed,
+        (m_1 * direction10[1]) / r10_cubed - (m_2 * direction02[1]) / r02_cubed,
 
         u[6],
         u[7],
-        const_1 * (-1 * direction[0]),
-        const_1 * (-1 * direction[1])
+        (m_2 * direction21[0]) / r21_cubed - (m_0 * direction10[0]) / r10_cubed,
+        (m_2 * direction21[1]) / r21_cubed - (m_0 * direction10[1]) / r10_cubed,
+
+        u[10],
+        u[11],
+        (m_0 * direction02[0]) / r02_cubed - (m_1 * direction21[0]) / r21_cubed,
+        (m_0 * direction02[1]) / r02_cubed - (m_1 * direction21[1]) / r21_cubed
     ])
-
-
-
-
 
 
 """
@@ -96,7 +106,7 @@ ode_system = lambda u, t: np.array([
 
 """
 initial_time = 0
-end_time = 500
+end_time = 100
 
 differential_equation = ODE(ode_system)
 initial_value_problem = IVP(differential_equation, u_initial, initial_time)
@@ -106,8 +116,7 @@ initial_value_problem = IVP(differential_equation, u_initial, initial_time)
 
 
 def adapt_step(stepped, lte, tolerance):
-    print(np.linalg.norm(lte, 2))
-    update = stepped * pow((tolerance / (np.linalg.norm(lte, 2))), (1.0/3))
+    update = stepped * pow((tolerance / (np.linalg.norm(lte, 2))), (1.0 / 3))
 
     if update > (stepped * 2):
         return 2 * stepped
@@ -122,29 +131,25 @@ def local_truncation_error_estimate(prediction, correction, time_mesh, this_step
     for i, p in enumerate(prediction):
         lte_vec[i] = fabs(p - correction[i])
 
-    steps = [time_mesh[this_step] - time_mesh[this_step-1],
-             time_mesh[this_step - 1] - time_mesh[this_step-2]]
+    steps = [time_mesh[this_step] - time_mesh[this_step - 1],
+             time_mesh[this_step - 1] - time_mesh[this_step - 2]]
 
     return lte_vec / (3 + (steps[1] / steps[0]))
-
-
 
 
 def compare_one_step_methods(step_size):
     global runge_kutta, predictor_corrector
 
     runge_kutta = RungeKuttaFourthSolver(initial_value_problem, end_time, step_size, two_body=True)
-    #runge_kutta.solve()
+    # runge_kutta.solve()
 
-    one_step = RungeKuttaFourthSolver(initial_value_problem, end_time, step_size, step_tol=1e-4)
+    one_step = RungeKuttaFourthSolver(initial_value_problem, end_time, step_size, step_tol=1e-2)
 
     predictor_corrector = PredictorCorrectorSolver(
         AdamsBashforthTwoSolver(initial_value_problem, one_step, end_time, step_size),
         AdamsMoultonTwoSolver(initial_value_problem, one_step, end_time, step_size),
         adaptive=True, method=adapt_step, lte=local_truncation_error_estimate, two_body=True)
     predictor_corrector.solve()
-
-    print(predictor_corrector.solve_time)
 
 
 ### Comparison of results #########################################################################
@@ -166,13 +171,13 @@ compare_one_step_methods(1e-2)
 comparison = ResultsComparator([predictor_corrector], true_solution=None)
 comparison.print_result_graphs()
 
-#comparison_2 = ResultsComparator([runge_kutta], true_solution=None)
-#comparison_2.print_result_graphs()
-#comparison.graph_local_truncation_errors()
+# comparison_2 = ResultsComparator([runge_kutta], true_solution=None)
+# comparison_2.print_result_graphs()
+# comparison.graph_local_truncation_errors()
 # comparison = ResultsComparator([runge_kutta], true_solution=None)
 # comparison.print_result_graphs()
 
-predictor_corrector.solution.write_to_csv("../../outputs/2_body.csv", [0, 1, 4, 5])
+predictor_corrector.solution.write_to_csv("../../outputs/3_body.csv", [0, 1, 4, 5, 8, 9])
 
 
 
