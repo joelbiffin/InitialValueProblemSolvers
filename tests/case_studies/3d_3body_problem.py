@@ -50,25 +50,31 @@ m_2 = 7.95
 u_initial = np.array([
     10,
     10,
+    0,
     0.1,
     0.2,
+    0,
 
     -4,
     7,
+    0.1,
     0,
     0.5,
+    0,
 
     10,
     -4,
+    -2,
     1,
-    -0.27
+    -0.27,
+    0
 ])
 
 
 def ode_system(u, t):
-    direction10 = u[4:6] - u[0:2]
-    direction21 = u[8:10] - u[4:6]
-    direction02 = u[0:2] - u[8:10]
+    direction10 = u[6:9] - u[0:3]
+    direction21 = u[12:15] - u[6:9]
+    direction02 = u[0:3] - u[12:15]
     r10_cubed = pow(np.linalg.norm(direction10, 2), 3)
     r21_cubed = pow(np.linalg.norm(direction21, 2), 3)
     r02_cubed = pow(np.linalg.norm(direction02, 2), 3)
@@ -78,20 +84,26 @@ def ode_system(u, t):
         return None
 
     return np.array([
-        u[2],
         u[3],
+        u[4],
+        u[5],
         (m_1 * direction10[0]) / r10_cubed - (m_2 * direction02[0]) / r02_cubed,
         (m_1 * direction10[1]) / r10_cubed - (m_2 * direction02[1]) / r02_cubed,
+        (m_1 * direction10[2]) / r10_cubed - (m_2 * direction02[2]) / r02_cubed,
 
-        u[6],
-        u[7],
+        u[8],
+        u[9],
+        u[10],
         (m_2 * direction21[0]) / r21_cubed - (m_0 * direction10[0]) / r10_cubed,
         (m_2 * direction21[1]) / r21_cubed - (m_0 * direction10[1]) / r10_cubed,
+        (m_2 * direction21[2]) / r21_cubed - (m_0 * direction10[2]) / r10_cubed,
 
-        u[10],
-        u[11],
+        u[14],
+        u[15],
+        u[16],
         (m_0 * direction02[0]) / r02_cubed - (m_1 * direction21[0]) / r21_cubed,
-        (m_0 * direction02[1]) / r02_cubed - (m_1 * direction21[1]) / r21_cubed
+        (m_0 * direction02[1]) / r02_cubed - (m_1 * direction21[1]) / r21_cubed,
+        (m_0 * direction02[2]) / r02_cubed - (m_1 * direction21[2]) / r21_cubed
     ])
 
 
@@ -106,7 +118,7 @@ ode_system = lambda u, t: np.array([
 
 """
 initial_time = 0
-end_time = 220
+end_time = 150
 
 differential_equation = ODE(ode_system)
 initial_value_problem = IVP(differential_equation, u_initial, initial_time)
@@ -177,7 +189,7 @@ comparison.print_result_graphs()
 # comparison = ResultsComparator([runge_kutta], true_solution=None)
 # comparison.print_result_graphs()
 
-predictor_corrector.solution.write_to_csv("../../outputs/3_body.csv", [0, 1, 4, 5, 8, 9])
+predictor_corrector.solution.write_to_csv("../../outputs/3d_body.csv", [0, 1, 2, 6, 7, 8, 12, 13, 14])
 
 
 

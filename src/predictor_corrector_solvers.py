@@ -107,8 +107,7 @@ class PredictorCorrectorSolver(Solver):
             correction = self.implicit_solver.pc_single_iteration(self.value_mesh,
                                                                   self.time_mesh,
                                                                   step_counter)
-            print("Prediction:\t", prediction)
-            print("Correction:\t", correction)
+
         else:
             prediction = self.explicit_solver.pc_single_iteration(self.value_mesh,
                                                                   self.time_mesh,

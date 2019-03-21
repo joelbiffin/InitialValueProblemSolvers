@@ -5,7 +5,7 @@ from src.ivp import IVP
 from src.ode import ODE
 from src.results import ResultsComparator
 from src.one_step_solvers import RungeKuttaFourthSolver, BackwardEulerSolver
-from src.multi_step_solvers import AdamsBashforthTwoSolver, AdamsMoultonOneSolver
+from src.multi_step_solvers import *
 
 from src.predictor_corrector_solvers import PredictorCorrectorSolver
 
@@ -18,7 +18,7 @@ u_0 = np.array([1.4])
 t_0 = 0
 
 step = 0.2
-t_n = 30
+t_n = 10
 
 
 
@@ -29,16 +29,20 @@ first_step_explicit_slv = RungeKuttaFourthSolver(problem, t_n, step)
 first_step_implicit_slv = BackwardEulerSolver(problem, t_n, step)
 
 pred_slv = AdamsBashforthTwoSolver(problem, first_step_explicit_slv, t_n, step)
-
-corr_slv = AdamsMoultonOneSolver(problem, first_step_implicit_slv, t_n, step)
+corr_slv = BackwardDifferentiationFormulaTwoSolver(problem, first_step_implicit_slv, t_n, step)
 
 pred_corr_slv = PredictorCorrectorSolver(pred_slv, corr_slv, adaptive=False)
 pred_corr_slv.solve()
-pred_corr_slv.print_solution()
 
 
+opred_slv = AdamsBashforthTwoSolver(problem, first_step_explicit_slv, t_n, step)
+ocorr_slv = AdamsMoultonTwoSolver(problem, first_step_implicit_slv, t_n, step)
 
-comparison = ResultsComparator([pred_corr_slv], true_solution=true_value)
+opred_corr_slv = PredictorCorrectorSolver(opred_slv, ocorr_slv, adaptive=False)
+opred_corr_slv.solve()
+
+
+comparison = ResultsComparator([pred_corr_slv, opred_corr_slv], true_solution=true_value)
 comparison.print_result_graphs()
 
 

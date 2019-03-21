@@ -231,7 +231,7 @@ class AdamsMoultonTwoSolver(MultiStepSolver):#
         g_next = lambda u_next, derivative, t_next: \
             u_next - u_i - (step_size * (derivative(u_next, t_next) + f_i)) / 2.0
 
-        return opt.newton(g_next, u_guess, args=(self.ivp.ode.function, self.time_mesh[this_step]))
+        return opt.fsolve(g_next, u_guess, args=(self.ivp.ode.function, self.time_mesh[this_step]))
 
 
     def pc_single_iteration(self, o_value_mesh, o_time_mesh, this_step, o_derivative_mesh=None):
@@ -328,13 +328,15 @@ class BackwardDifferentiationFormulaTwoSolver(MultiStepSolver):
                                                             self.derivative_mesh)
             # return self.one_step_solver.calculate_next_values(this_step, step_size)
 
-        u_last = self.derivative_mesh[this_step - 2]
+        u_last = self.value_mesh[this_step - 2]
         u_guess = u_i + step_size * f_i
 
         print("Step #", this_step, " guess:\t", u_guess)
 
         # function needing to be solved
         g_next = lambda u_next, derivative, t_next: u_next - ((4*u_i - u_last + 2*step_size*derivative(u_next, t_plus_one)) / 3.0)
+
+        # TODO: update for variable step-sizes
 
         # u_{i+1} = (4/3)u_i - (1/3)u_last + (2h/3) f(u_{i+1}, t_{i+1})
         return opt.fsolve(g_next, u_guess, args=(self.ivp.ode.function, t_plus_one))

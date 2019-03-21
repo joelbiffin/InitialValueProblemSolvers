@@ -44,17 +44,17 @@ Case study 2: Gravitational 2-body Problem
 ### Setting up ####################################################################################
 
 m_0 = 5
-m_1 = 5
+m_1 = 100
 
 u_initial = np.array([
-    1,
-    -1,
-    -0.5,
-    -2,
-    -1,
-    1,
+    2,
+    2,
+    5,
+    -5,
     0,
-    1
+    0,
+    0,
+    0
 ])
 
 
@@ -96,7 +96,7 @@ ode_system = lambda u, t: np.array([
 
 """
 initial_time = 0
-end_time = 500
+end_time = 100
 
 differential_equation = ODE(ode_system)
 initial_value_problem = IVP(differential_equation, u_initial, initial_time)
@@ -106,7 +106,6 @@ initial_value_problem = IVP(differential_equation, u_initial, initial_time)
 
 
 def adapt_step(stepped, lte, tolerance):
-    print(np.linalg.norm(lte, 2))
     update = stepped * pow((tolerance / (np.linalg.norm(lte, 2))), (1.0/3))
 
     if update > (stepped * 2):
@@ -136,7 +135,7 @@ def compare_one_step_methods(step_size):
     runge_kutta = RungeKuttaFourthSolver(initial_value_problem, end_time, step_size, two_body=True)
     #runge_kutta.solve()
 
-    one_step = RungeKuttaFourthSolver(initial_value_problem, end_time, step_size, step_tol=1e-4)
+    one_step = RungeKuttaFourthSolver(initial_value_problem, end_time, step_size, step_tol=1e-3)
 
     predictor_corrector = PredictorCorrectorSolver(
         AdamsBashforthTwoSolver(initial_value_problem, one_step, end_time, step_size),
@@ -172,7 +171,7 @@ comparison.print_result_graphs()
 # comparison = ResultsComparator([runge_kutta], true_solution=None)
 # comparison.print_result_graphs()
 
-predictor_corrector.solution.write_to_csv("../../outputs/2_body.csv", [0, 1, 4, 5])
+predictor_corrector.solution.write_to_csv("../../outputs/2_body-5-100-planet-moon.csv", [0, 1, 4, 5])
 
 
 

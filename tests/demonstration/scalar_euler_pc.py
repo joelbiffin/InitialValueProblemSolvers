@@ -34,12 +34,24 @@ problem = IVP(de, u_0, t_0)
 pred_slv = ForwardEulerSolver(problem, t_n, step, step_tol=1e-3)
 corr_slv = BackwardEulerSolver(problem, t_n, step)
 
-pred_corr_slv = PredictorCorrectorSolver(pred_slv, corr_slv)
+pred_corr_slv = PredictorCorrectorSolver(pred_slv, corr_slv, lte=local_truncation_error_estimate)
 pred_corr_slv.solve()
+print("{}.solve() ran in {}s.".format(str(pred_corr_slv), pred_corr_slv.solve_time))
 
+
+forward_slv = ForwardEulerSolver(problem, t_n, step)
+forward_slv.solve()
+print("{}.solve() ran in {}s.".format(str(forward_slv), forward_slv.solve_time))
+
+backward_slv = BackwardEulerSolver(problem, t_n, step)
+backward_slv.solve()
+print("{}.solve() ran in {}s.".format(str(backward_slv), backward_slv.solve_time))
 
 
 comparison = ResultsComparator([pred_corr_slv], true_solution=true_value)
+comparison.print_result_graphs()
+
+comparison = ResultsComparator([pred_corr_slv, forward_slv, backward_slv], true_solution=true_value)
 comparison.print_result_graphs()
 
 comparison.graph_local_truncation_errors()
