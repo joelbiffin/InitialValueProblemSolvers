@@ -21,17 +21,6 @@ step = 0.25
 t_n = 20
 
 
-def local_truncation_error_estimate(prediction, correction, time_mesh, this_step):
-    lte_vec = np.zeros_like(prediction)
-    for i, p in enumerate(prediction):
-        lte_vec[i] = fabs(p - correction[i])
-
-    steps = [time_mesh[this_step] - time_mesh[this_step-1],
-             time_mesh[this_step - 1] - time_mesh[this_step-2]]
-
-    return lte_vec / (3 + (steps[1] / steps[0]))
-
-
 problem = IVP(de, u_0, t_0)
 
 first_step_explicit_slv = RungeKuttaFourthSolver(problem, t_n, step)
@@ -40,7 +29,7 @@ first_step_implicit_slv = BackwardEulerSolver(problem, t_n, step)
 pred_slv = AdamsBashforthTwoSolver(problem, first_step_explicit_slv, t_n, step)
 corr_slv = AdamsMoultonTwoSolver(problem, first_step_implicit_slv, t_n, step)
 
-pred_corr_slv = PredictorCorrectorSolver(pred_slv, corr_slv, adaptive=False, lte=local_truncation_error_estimate())
+pred_corr_slv = PredictorCorrectorSolver(pred_slv, corr_slv, adaptive=False)
 pred_corr_slv.solve()
 
 comparison = ResultsComparator([pred_corr_slv], true_solution=true_value)

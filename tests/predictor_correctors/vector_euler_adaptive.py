@@ -45,7 +45,7 @@ def adapt_step(stepped, lte, tolerance):
     update = stepped * pow((tolerance / (np.linalg.norm(lte, 2))), 0.5)
 
     if update > (stepped * 2):
-        return 2 * stepped
+        return 1.5 * stepped
     elif (2 * update) < stepped:
         return 0.5 * stepped
 
@@ -63,11 +63,10 @@ def local_truncation_error_estimate(prediction, correction, time_mesh=None, this
 
 problem = IVP(de, u_0, t_0)
 
-pred_slv = ForwardEulerSolver(problem, t_n, step, step_tol=5e-2)
+pred_slv = ForwardEulerSolver(problem, t_n, step, step_tol=1e-4)
 corr_slv = BackwardEulerSolver(problem, t_n, step)
 
-pred_corr_slv = PredictorCorrectorSolver(pred_slv, corr_slv, adaptive=True, method=adapt_step,
-                                         lte=local_truncation_error_estimate)
+pred_corr_slv = PredictorCorrectorSolver(pred_slv, corr_slv, adaptive=True, method=adapt_step)
 pred_corr_slv.solve()
 
 

@@ -42,11 +42,10 @@ def local_truncation_error_estimate(prediction, correction, time_mesh=None, this
 
 problem = IVP(de, u_0, t_0)
 
-pred_slv = ForwardEulerSolver(problem, t_n, step, step_tol=1e-2)
+pred_slv = ForwardEulerSolver(problem, t_n, step, step_tol=1e-4)
 corr_slv = BackwardEulerSolver(problem, t_n, step)
 
-pred_corr_slv = PredictorCorrectorSolver(pred_slv, corr_slv, adaptive=True, method=adapt_step,
-                                         lte=local_truncation_error_estimate)
+pred_corr_slv = PredictorCorrectorSolver(pred_slv, corr_slv, adaptive=True, method=adapt_step)
 pred_corr_slv.solve()
 
 

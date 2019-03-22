@@ -54,7 +54,7 @@ pred_slv = AdamsBashforthTwoSolver(problem, first_step_explicit_slv, t_n, step)
 corr_slv = AdamsMoultonTwoSolver(problem, first_step_implicit_slv, t_n, step)
 
 pred_corr_slv = PredictorCorrectorSolver(pred_slv, corr_slv, adaptive=True, method=adapt_step,
-                                         lte=local_truncation_error_estimate)
+                                         lte=None )
 pred_corr_slv.solve()
 
 comparison = ResultsComparator([pred_corr_slv], true_solution=true_value)

@@ -115,7 +115,7 @@ class ForwardEulerSolver(OneStepSolver):
         return u_i + step_size * f_i
 
 
-    def pc_single_iteration(self, o_value_mesh, o_time_mesh, this_step, o_derivative_mesh=None):
+    def single_iteration(self, o_value_mesh, o_time_mesh, this_step, o_derivative_mesh=None):
         u_i = o_value_mesh[this_step - 1]
         t_i = o_time_mesh[this_step - 1]
         f_i = self.ivp.ode.function(u_i, t_i)
@@ -134,6 +134,7 @@ class BackwardEulerSolver(OneStepSolver):
         super().__init__(ivp, end_time, step_size, step_tol=step_tol)
         self.method_type = MethodType.implicit
         self.method_order = 1
+        self.error_constant = -0.5
 
 
     def calculate_next_values(self, this_step, step_size,
@@ -159,7 +160,7 @@ class BackwardEulerSolver(OneStepSolver):
         return opt.fsolve(g_next, u_guess, args=(self.ivp.ode.function, self.time_mesh[this_step]))
 
 
-    def pc_single_iteration(self, o_value_mesh, o_time_mesh, this_step, o_derivative_mesh=None):
+    def single_iteration(self, o_value_mesh, o_time_mesh, this_step, o_derivative_mesh=None):
         prediction = o_value_mesh[this_step]
         u_i = o_value_mesh[this_step - 1]
         t_next = o_time_mesh[this_step]
@@ -196,7 +197,7 @@ class RungeKuttaFourthSolver(OneStepSolver):
         return u_i + (1 / 6.0) * (k_1 + 2*k_2 + 2*k_3 + k_4)
 
 
-    def pc_single_iteration(self, o_value_mesh, o_time_mesh, this_step, o_derivative_mesh=None):
+    def single_iteration(self, o_value_mesh, o_time_mesh, this_step, o_derivative_mesh=None):
         u_i = o_value_mesh[this_step - 1]
         t_i = o_time_mesh[this_step - 1]
         step_size = o_time_mesh[this_step] - t_i

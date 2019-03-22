@@ -29,29 +29,29 @@ class PredictorCorrectorSolver(Solver):
 
         # boolean for whether the method uses adaptive step size or not
         self.adaptive = adaptive
-        self.adapt_method = method
-        self.lte = lte
+        self.lte = self.milnes_device
+        self.approx_lte = self.explicit_solver.build_value_mesh()
+
+        if self.adaptive:
+            self.adapt = self.adapt_step
+        if lte is not None:
+            self.lte = lte
+        if method is not None:
+            self.adapt = method
 
         # making sure given solvers have correct type
         self.check_explicit_implicit()
         # getting initial step size
         self.step_size = self.explicit_solver.next_step_size(0)
 
-        # checking that ivps are the same
-        # TODO: make this method
-        self.check_same_problem()
-
         self.ivp = self.explicit_solver.ivp
         self.current_time = self.explicit_solver.ivp.initial_time
         self.end_time = self.explicit_solver.end_time
 
-        if self.explicit_solver.step_number > 1:
+        if self.implicit_solver.step_number > 1:
             self.derivative_mesh = self.build_derivative_mesh(self.ivp.dimension)
         else:
             self.derivative_mesh = None
-
-        if self.lte is not None:
-            self.approx_lte = self.explicit_solver.build_value_mesh()
 
         super().__init__(self.ivp, self.explicit_solver.end_time)
 
@@ -100,31 +100,31 @@ class PredictorCorrectorSolver(Solver):
         lte_approx = None
 
         if self.derivative_mesh is None:
-            prediction = self.explicit_solver.pc_single_iteration(self.value_mesh,
-                                                                  self.time_mesh,
-                                                                  step_counter)
+            prediction = self.explicit_solver.single_iteration(self.value_mesh,
+                                                               self.time_mesh,
+                                                               step_counter)
             self.update_current_state(step_counter, prediction)
-            correction = self.implicit_solver.pc_single_iteration(self.value_mesh,
-                                                                  self.time_mesh,
-                                                                  step_counter)
+            correction = self.implicit_solver.single_iteration(self.value_mesh,
+                                                               self.time_mesh,
+                                                               step_counter)
 
         else:
-            prediction = self.explicit_solver.pc_single_iteration(self.value_mesh,
-                                                                  self.time_mesh,
-                                                                  step_counter,
-                                                                  self.derivative_mesh)
+            prediction = self.explicit_solver.single_iteration(self.value_mesh,
+                                                               self.time_mesh,
+                                                               step_counter,
+                                                               self.derivative_mesh)
             derivative = self.ivp.ode.function(prediction, self.current_time)
             self.update_current_state(step_counter, prediction, derivative)
-            correction = self.implicit_solver.pc_single_iteration(self.value_mesh,
-                                                                  self.time_mesh,
-                                                                  step_counter,
-                                                                  self.derivative_mesh)
+            correction = self.implicit_solver.single_iteration(self.value_mesh,
+                                                               self.time_mesh,
+                                                               step_counter,
+                                                               self.derivative_mesh)
 
         if self.lte is not None:
             lte_approx = self.lte(prediction, correction, self.time_mesh, step_counter)
 
         if self.adaptive:
-            new_step = self.adapt_method(self.step_size, lte_approx, self.step_tol)
+            new_step = self.adapt(self.step_size, lte_approx, self.step_tol)
 
             if not(0.9*self.step_size < new_step < 1.1*self.step_size):
                 self.step_size = new_step
@@ -152,17 +152,32 @@ class PredictorCorrectorSolver(Solver):
         return self.step_size
 
 
+    def adapt_step(self, stepped, lte, tolerance):
+        p = self.implicit_solver.method_order
+        update = stepped * pow((tolerance / (np.linalg.norm(lte, 2))), (1.0/(p+1)))
+
+        if update > (stepped * 2):
+            return 2 * stepped
+        elif (2 * update) < stepped:
+            return 0.5 * stepped
+
+        return update
+
+
+
     def build_derivative_mesh(self, dimension):
         return np.zeros((self.max_mesh_size(), dimension))
 
 
-    def pc_single_iteration(self, o_value_mesh, o_time_mesh, this_step, o_derivative_mesh=None):
+    def single_iteration(self, o_value_mesh, o_time_mesh, this_step, o_derivative_mesh=None):
         pass
 
 
-    @staticmethod
-    def check_same_problem():
-        return True
+    def milnes_device(self, prediction, correction, derivative, step_counter):
+        ex_error = self.explicit_solver.error_constant
+        im_error = self.implicit_solver.error_constant
+        constant = im_error / (math.fabs(ex_error - im_error))
+        return constant * np.fabs(prediction - correction)
 
 
     def check_explicit_implicit(self):

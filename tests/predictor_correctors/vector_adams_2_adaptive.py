@@ -29,7 +29,6 @@ t_n = 2
 
 
 def adapt_step(stepped, lte, tolerance):
-    print(tolerance)
     update = stepped * pow((tolerance / (np.linalg.norm(lte, 2))), (1.0/3))
 
     if update > (stepped * 2):
@@ -59,8 +58,7 @@ first_step_implicit_slv = BackwardEulerSolver(problem, t_n, step)
 pred_slv = AdamsBashforthTwoSolver(problem, first_step_explicit_slv, t_n, step)
 corr_slv = AdamsMoultonTwoSolver(problem, first_step_implicit_slv, t_n, step)
 
-pred_corr_slv = PredictorCorrectorSolver(pred_slv, corr_slv, adaptive=True,
-                                         method=adapt_step, lte=local_truncation_error_estimate)
+pred_corr_slv = PredictorCorrectorSolver(pred_slv, corr_slv, adaptive=True)
 pred_corr_slv.solve()
 
 

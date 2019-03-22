@@ -78,7 +78,7 @@ class Solver(TimedSolver):
 
 
     @abstractmethod
-    def pc_single_iteration(self, o_value_mesh, o_time_mesh, this_step, o_derivative_mesh=None):
+    def single_iteration(self, o_value_mesh, o_time_mesh, this_step, o_derivative_mesh=None):
         pass
 
 
